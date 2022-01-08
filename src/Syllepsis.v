@@ -1,25 +1,5 @@
 From HoTT Require Import Basics Types.
 
-Require Import WildCat.
-
-Global Existing Instances
-  isgraph_paths is01cat_paths is0gpd_paths
-  | 1000.
-    
-Local Instance is1cat_paths (A : Type) : Is1Cat A.
-Proof.
-  unshelve econstructor.
-  { intros a b c g; split; intros h i j.
-    exact (whiskerR j g). }
-  { intros a b c g; split; intros h i j.
-    exact (whiskerL g j). }
-  { intros a b c d f g h.
-    apply concat_p_pp. }
-  1: intros a b f; apply concat_p1.
-  intros a b f; apply concat_1p.
-Defined.
-      
-    
 (* Monoidal isomorphisms *)
 
 Local Definition ulnat {X} {a b : X} {p q : a = b} (alpha : p = q) :
@@ -128,13 +108,11 @@ Section TwoSquares.
   Local Definition twoSquares :
     (ab0 @ bc0) @ c01 = a01 @ (ab1 @ bc1).
   Proof.
-    (** Here are squares from wildcat being used *)
-    (** Unforunately you need to manually specify the A argument since coq is dumb. A is the wildcat arugment, just stick in the type and the commands above will magically invoke the categorical structure of types here. *)
-    change (Square a01 b01 ab0 ab1) in phi.
-    change (Square b01 c01 bc0 bc1) in theta.
-    (** as you can see exact same as before (definitionally equal) *)
-    (** but now you can use square lemmas like *)
-    exact (hconcat phi theta).
+    refine (concat_pp_p _ _ _ @ _).
+    refine (whiskerL ab0 theta @ _).
+    refine (concat_p_pp _ _ _ @ _).
+    refine (whiskerR phi bc1 @ _).
+    srapply concat_pp_p.
   Defined.
 
 End TwoSquares.
@@ -149,16 +127,16 @@ Section SquareInv.
   Local Definition squareInv :
     ab1 @ b01^ = a01^ @ ab0.
   Proof.
-    induction a01; induction b01.
-    revert phi; srapply (equiv_ind I^-1); intro phi.
+    induction a01; induction b01. simpl. 
+    revert phi; srapply (equiv_ind RightPush^-1); intro phi.
     induction phi.
-    srapply (I^-1 idpath).
+    srapply (RightPush^-1 idpath).
   Defined.
 
 End SquareInv.
 
 Local Definition EH_natL_twoSquares' {X} {a : X} {u} (p : idpath (idpath a) = u) :
-  EH_natL p = (whiskerL (whiskerL 1 p) (EH_refl_R u)) @
+  EH_natL p = (whiskerL (whiskerL 1 p) (EH_refl_L u)) @
               (twoSquares (ulnat p)^ (squareInv (urnat p))^)^.
 Proof.
   induction p.
@@ -166,7 +144,7 @@ Proof.
 Defined.
 
 Local Definition EH_natR_twoSquares' {X} {a : X} {u} (p : idpath (idpath a) = u) :
-  EH_natR p = (whiskerL (whiskerR p 1) (EH_refl_L u)) @
+  EH_natR p = (whiskerL (whiskerR p 1) (EH_refl_R u)) @
               (twoSquares (urnat p)^ (squareInv (ulnat p))^)^.
 Proof.
   induction p.
@@ -196,26 +174,26 @@ Local Definition DR {X} {a : X} {x y u v : idpath a = idpath a} p q :
   twoSquares (EH_natR q) (EH_natL p).
 
 Local Definition S {X} {a : X} {x y u v : idpath a = idpath a} p q :
-  DL p q @ whiskerL (EH u x) (C q p)^ = whiskerR (C p q) (EH v y) @ DR p q.
+  DL p q @ whiskerL (EH u x) (wlrnat p q)^ = whiskerR (wlrnat q p) (EH v y) @ DR p q.
 Proof.
   induction p; induction q.
-  srapply (I^-1 idpath).
+  srapply (RightPush^-1 idpath).
 Defined.
 
 Local Definition EL {X} {a : X} (p q : idpath (idpath a) = idpath (idpath a)) :
   (whiskerL 1 p @ whiskerR q 1) @ 1 = 1 @ (whiskerR p 1 @ whiskerL 1 q).
 Proof.
-  srapply I^-1.
-  refine ((I (ulnat p) @@ I (urnat q)) @ _).
-  refine ((I (urnat p) @@ I (ulnat q))^).
+  srapply RightPush^-1.
+  refine ((RightPush (ulnat p) @@ RightPush (urnat q)) @ _).
+  refine ((RightPush (urnat p) @@ RightPush (ulnat q))^).
 Defined.
 
 Local Definition ER {X} {a : X} (p q : idpath (idpath a) = idpath (idpath a)) :
   (whiskerR q 1 @ whiskerL 1 p) @ 1 = 1 @ (whiskerL 1 q @ whiskerR p 1).
 Proof.
-  srapply I^-1.
-  refine ((I (urnat q) @@ I (ulnat p)) @ _).
-  refine ((I (ulnat q) @@ I (urnat p))^).
+  srapply RightPush^-1.
+  refine ((RightPush (urnat q) @@ RightPush (ulnat p)) @ _).
+  refine ((RightPush (ulnat q) @@ RightPush (urnat p))^).
 Defined.
 
 Local Definition F {X} {a b c : X} {p0 p1 p2 : a = b} {q0 q1 q2 : b = c}
@@ -223,14 +201,14 @@ Local Definition F {X} {a b c : X} {p0 p1 p2 : a = b} {q0 q1 q2 : b = c}
   {q01 : q0 @ 1 = 1 @ q1} {q12 : q2 @ 1 = 1 @ q1} {q02 : q0 @ 1 = 1 @ q2} :
   (twoSquares p01^ (squareInv p12)^)^ = p02 ->
   (twoSquares q01^ (squareInv q12)^)^ = q02 ->
-  twoSquares p02 q02 = I^-1 ((I p01 @@ I q01) @ (I p12 @@ I q12)^).
+  twoSquares p02 q02 = RightPush^-1 ((RightPush p01 @@ RightPush q01) @ (RightPush p12 @@ RightPush q12)^).
 Proof.
   intros phi theta.
   induction phi; induction theta.
-  revert p01; srapply (equiv_ind I^-1); intro p01.
-  revert q01; srapply (equiv_ind I^-1); intro q01.
-  revert p12; srapply (equiv_ind I^-1); intro p12.
-  revert q12; srapply (equiv_ind I^-1); intro q12.
+  revert p01; srapply (equiv_ind RightPush^-1); intro p01.
+  revert q01; srapply (equiv_ind RightPush^-1); intro q01.
+  revert p12; srapply (equiv_ind RightPush^-1); intro p12.
+  revert q12; srapply (equiv_ind RightPush^-1); intro q12.
   induction p12; induction q12; induction p01; induction q01.
   induction p0; induction q0.
   reflexivity.
@@ -255,7 +233,7 @@ Proof.
 Defined.
 
 Local Definition T {X} {a : X} (p q : idpath (idpath a) = idpath (idpath a)) :
-  EL p q @ whiskerL 1 (C q p)^ = whiskerR (C p q) 1 @ ER p q.
+  EL p q @ whiskerL 1 (wlrnat p q)^ = whiskerR (wlrnat q p) 1 @ ER p q.
 Proof.
   refine (whiskerR (DL_eq_EL p q)^ _ @ _).
   refine (_ @ whiskerL _ (DR_eq_ER p q)).
@@ -265,7 +243,7 @@ Defined.
 Local Definition H {X} {a b : X} {a0 a1 a2 a3 a4 a5 : a = b}
   {a10 : a1 = a0} {a12 : a1 = a2} {a23 : a2 = a3}
   {a43 : a4 = a3} {a45 : a4 = a5} {a50 : a5 = a0} :
-  I^-1 (a10 @ a50^) @ whiskerL 1 a45^ = whiskerR a12 1 @ I^-1 (a23 @ a43^) ->
+  RightPush^-1 (a10 @ a50^) @ whiskerL 1 a45^ = whiskerR a12 1 @ RightPush^-1 (a23 @ a43^) ->
   a10^ @ (a12 @ a23) = (a43^ @ (a45 @ a50))^.
 Proof.
   induction a45; induction a43; induction a23; induction a12; induction a50; induction a1.

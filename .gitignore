@@ -1,1 +1,6 @@
 _opam/
+*.aux
+*.glob
+*.d
+Makefile
+Makefile.conf

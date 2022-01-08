@@ -1,3 +1,4 @@
+-I src/
 -arg -noinit
 -arg -indices-matter
--R WildCat/ WildCat
+src/Syllepsis.v
