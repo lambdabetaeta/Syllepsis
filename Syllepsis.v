@@ -1,8 +1,24 @@
-From HoTT Require Import Basics Types WildCat.
+From HoTT Require Import Basics Types.
+
+Require Import WildCat.
 
 Global Existing Instances
   isgraph_paths is01cat_paths is0gpd_paths
   | 1000.
+    
+Local Instance is1cat_paths (A : Type) : Is1Cat A.
+Proof.
+  unshelve econstructor.
+  { intros a b c g; split; intros h i j.
+    exact (whiskerR j g). }
+  { intros a b c g; split; intros h i j.
+    exact (whiskerL g j). }
+  { intros a b c d f g h.
+    apply concat_p_pp. }
+  1: intros a b f; apply concat_p1.
+  intros a b f; apply concat_1p.
+Defined.
+      
     
 (* Monoidal isomorphisms *)
 
@@ -53,7 +69,7 @@ Defined.
 (* EH on reflexivity *)
 
 Local Definition EH_refl_L_coh {X} {a b c : X} {p q : a = b} {r : b = c} {alpha : p = q}
-  (s : p @ r = q @ r) (theta : whiskerR alpha r = s)
+  {s : p @ r = q @ r} (theta : whiskerR alpha r = s)
   : (1 @@ theta)^ @ (wlrnat alpha (idpath r) @ (theta @@ 1))
       = concat_1p s @ (concat_p1 s)^.
 Proof.
@@ -64,8 +80,7 @@ Local Definition EH_refl_L {X} {a : X} (p : idpath a = idpath a) :
   EH idpath p = concat_1p p @ (concat_p1 p)^.
 Proof.
   unfold EH. 
-  srapply (EH_refl_L_coh p (RightPush (urnat p))).
-  srapply (EH_refl_L_coh (((concat_p1 (whiskerR p 1))^ @ urnat p) @ concat_1p p)).
+  srapply (EH_refl_L_coh (p:=1) (q:=1) (r:=1) (RightPush (urnat p))).
 Defined.
 
 Local Definition EH_refl_R_coh {X} {a b c : X} {p : a = b} {q r : b = c} {alpha : q = r}
@@ -79,8 +94,8 @@ Defined.
 Local Definition EH_refl_R {X} {a : X} (p : idpath a = idpath a) :
   EH p idpath = concat_p1 p @ (concat_1p p)^.
 Proof.
-  unfold EH. simpl.
-  srapply (EH_refl_R_coh (((concat_p1 (whiskerL 1 p))^ @ ulnat p) @ concat_1p p)).
+  unfold EH.
+  srapply (EH_refl_R_coh (p:=1) (q:=1) (r:=1) (RightPush (ulnat p))).
 Defined.
 
 (* Naturality of Eckmann - Hilton *)
@@ -115,8 +130,8 @@ Section TwoSquares.
   Proof.
     (** Here are squares from wildcat being used *)
     (** Unforunately you need to manually specify the A argument since coq is dumb. A is the wildcat arugment, just stick in the type and the commands above will magically invoke the categorical structure of types here. *)
-    change (Square (A:=X) a01 b01 ab0 ab1) in phi.
-    change (Square (A:=X) b01 c01 bc0 bc1) in theta.
+    change (Square a01 b01 ab0 ab1) in phi.
+    change (Square b01 c01 bc0 bc1) in theta.
     (** as you can see exact same as before (definitionally equal) *)
     (** but now you can use square lemmas like *)
     exact (hconcat phi theta).
