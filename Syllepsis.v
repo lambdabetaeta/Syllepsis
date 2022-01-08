@@ -6,17 +6,17 @@ Global Existing Instances
     
 (* Monoidal isomorphisms *)
 
-Local Definition ulnat {X} {a : X} {u v : a = a} p :
-  whiskerL 1 p @ concat_1p v = concat_1p u @ p.
+Local Definition ulnat {X} {a b : X} {p q : a = b} (alpha : p = q) :
+  whiskerL 1 alpha @ concat_1p q = concat_1p p @ alpha.
 Proof.
-  destruct p. simpl. srapply (concat_1p _ @ (concat_p1 _)^).
-Defined.
+  destruct p. simpl. destruct alpha. exact 1.
+Defined. 
 
-Local Definition urnat {X} {a : X} {u v : a = a} p :
-  whiskerR p 1 @ concat_p1 v = concat_p1 u @ p.
+Local Definition urnat {X} {a b : X} {p q : a = b} (alpha : p = q) :
+  whiskerR alpha 1 @ concat_p1 q = concat_p1 p @ alpha.
 Proof.
-  induction p. simpl. srapply (concat_1p _ @ (concat_p1 _)^).
-Defined.
+  destruct p. destruct alpha. exact 1.
+Defined. 
 
 Local Definition RightPush {X} {a b : X} {p q : a = b}
   : (p @ 1 = 1 @ q) <~> (p = q).
@@ -82,39 +82,23 @@ Proof.
   srapply (EH_refl_R_coh (((concat_p1 (whiskerL 1 p))^ @ ulnat p) @ concat_1p p)).
 Defined.
 
-(* reworked up to this point only! *)
+(* Naturality of Eckmann - Hilton *)
 
-Local Definition GL {X} {a b : X} {p q : a = b} (theta : p @ 1 = 1 @ q) :
-  ((1 @@ I theta)^) @ ((J^-1 1) @ (I theta @@ 1)) = concat_1p q @ (concat_p1 q)^.
+Local Definition EH_natL {X} {a : X} {x u v : idpath a = idpath a} p :
+  whiskerL x p @ EH x v = EH x u @ whiskerR p x.
 Proof.
-  revert theta; srapply (equiv_ind I^-1); intro theta.
-  induction theta; induction p.
-  reflexivity.
+  induction p. unfold whiskerL. simpl.
+  srapply (DownPush^-1 idpath).
 Defined.
 
-Local Definition GR {X} {a b : X} {p q : a = b} (theta : p @ 1 = 1 @ q) :
-  ((I theta @@ 1)^) @ ((I^-1 1) @ (1 @@ I theta)) = concat_p1 q @ (concat_1p q)^.
+Local Definition EH_natR {X} {a : X} {x u v : idpath a = idpath a} p :
+  whiskerR p x @ EH v x = EH u x @ whiskerL x p.
 Proof.
-  revert theta; srapply (equiv_ind I^-1); intro theta.
-  induction theta; induction p.
-  reflexivity.
+  induction p. unfold whiskerR. simpl.
+  srapply (DownPush^-1 idpath).
 Defined.
 
-Local Definition EH_refl_L {X} {a : X} (p : idpath a = idpath a) :
-  EH p idpath = concat_p1 p @ (concat_1p p)^.
-Proof.
-  refine (_ @ GR (ulnat p)).
-  srapply whiskerL; srapply whiskerR.
-  exact (C_refl_R p).
-Defined.
-
-Local Definition EH_refl_R {X} {a : X} (p : idpath a = idpath a) :
-  EH idpath p = concat_1p p @ (concat_p1 p)^.
-Proof.
-  refine (_ @ GL (urnat p)).
-  srapply whiskerL; srapply whiskerR.
-  exact (C_refl_L p).
-Defined.
+(* REWORKED ENDS HERE *)
 
 Section TwoSquares.
 
@@ -130,8 +114,8 @@ Section TwoSquares.
   Proof.
     (** Here are squares from wildcat being used *)
     (** Unforunately you need to manually specify the A argument since coq is dumb. A is the wildcat arugment, just stick in the type and the commands above will magically invoke the categorical structure of types here. *)
-    (** change (Square (A:=X) a01 b01 ab0 ab1) in phi.
-    change (Square (A:=X) b01 c01 bc0 bc1) in theta. **)
+    change (Square (A:=X) a01 b01 ab0 ab1) in phi.
+    change (Square (A:=X) b01 c01 bc0 bc1) in theta.
     (** as you can see exact same as before (definitionally equal) *)
     (** but now you can use square lemmas like *)
     exact (hconcat phi theta).
@@ -156,21 +140,6 @@ Section SquareInv.
   Defined.
 
 End SquareInv.
-
-
-Local Definition EH_natL {X} {a : X} {x u v : idpath a = idpath a} p :
-  whiskerL x p @ EH x v = EH x u @ whiskerR p x.
-Proof.
-  induction p.
-  srapply (J^-1 idpath).
-Defined.
-
-Local Definition EH_natR {X} {a : X} {x u v : idpath a = idpath a} p :
-  whiskerR p x @ EH v x = EH u x @ whiskerL x p.
-Proof.
-  induction p.
-  srapply (J^-1 idpath).
-Defined.
 
 Local Definition EH_natL_twoSquares' {X} {a : X} {u} (p : idpath (idpath a) = u) :
   EH_natL p = (whiskerL (whiskerL 1 p) (EH_refl_R u)) @
