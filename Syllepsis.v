@@ -52,18 +52,34 @@ Defined.
 
 (* EH on reflexivity *)
 
-Local Definition wlrnat_refl_L {X} {a b c : X} {p : a = b} {q r : b = c}
-    {alpha : q = r} :
-  wlrnat (idpath p) alpha = RightPush^-1 1.
+Local Definition EH_refl_L_coh {X} {a b c : X} {p q : a = b} {r : b = c} {alpha : p = q}
+  {s : p @ r = q @ r} (theta : whiskerR alpha r = s)
+  : (1 @@ theta)^ @ (wlrnat alpha (idpath r) @ (theta @@ 1))
+      = concat_1p s @ (concat_p1 s)^.
 Proof.
-  destruct alpha. exact 1.
+  destruct theta. destruct alpha. exact 1.
 Defined.
 
-Local Definition wlrnat_refl_R {X} {a b c : X} {p q : a = b} {r : b = c}
-    {alpha : p = q} :
-  wlrnat alpha (idpath r) = DownPush^-1 1.
+Local Definition EH_refl_L {X} {a : X} (p : idpath a = idpath a) :
+  EH idpath p = concat_1p p @ (concat_p1 p)^.
 Proof.
-  destruct alpha. exact 1.
+  unfold EH. simpl.
+  srapply (EH_refl_L_coh (((concat_p1 (whiskerR p 1))^ @ urnat p) @ concat_1p p)).
+Defined.
+
+Local Definition EH_refl_R_coh {X} {a b c : X} {p : a = b} {q r : b = c} {alpha : q = r}
+  {s : p @ q = p @ r} (theta : whiskerL p alpha = s)
+  : (theta @@ 1)^ @ (wlrnat (idpath p) alpha @ (1 @@ theta))
+      = concat_p1 s @ (concat_1p s)^.
+Proof.
+  destruct theta. destruct alpha. exact 1.
+Defined.
+
+Local Definition EH_refl_R {X} {a : X} (p : idpath a = idpath a) :
+  EH p idpath = concat_p1 p @ (concat_1p p)^.
+Proof.
+  unfold EH. simpl.
+  srapply (EH_refl_R_coh (((concat_p1 (whiskerL 1 p))^ @ ulnat p) @ concat_1p p)).
 Defined.
 
 (* reworked up to this point only! *)
