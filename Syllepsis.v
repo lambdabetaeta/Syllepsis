@@ -9,7 +9,7 @@ Global Existing Instances
 Local Definition ulnat {X} {a b : X} {p q : a = b} (alpha : p = q) :
   whiskerL 1 alpha @ concat_1p q = concat_1p p @ alpha.
 Proof.
-  destruct p. simpl. destruct alpha. exact 1.
+  destruct p. destruct alpha. exact 1.
 Defined. 
 
 Local Definition urnat {X} {a b : X} {p q : a = b} (alpha : p = q) :
@@ -53,7 +53,7 @@ Defined.
 (* EH on reflexivity *)
 
 Local Definition EH_refl_L_coh {X} {a b c : X} {p q : a = b} {r : b = c} {alpha : p = q}
-  {s : p @ r = q @ r} (theta : whiskerR alpha r = s)
+  (s : p @ r = q @ r) (theta : whiskerR alpha r = s)
   : (1 @@ theta)^ @ (wlrnat alpha (idpath r) @ (theta @@ 1))
       = concat_1p s @ (concat_p1 s)^.
 Proof.
@@ -63,7 +63,8 @@ Defined.
 Local Definition EH_refl_L {X} {a : X} (p : idpath a = idpath a) :
   EH idpath p = concat_1p p @ (concat_p1 p)^.
 Proof.
-  unfold EH. simpl.
+  unfold EH. 
+  srapply (EH_refl_L_coh p (RightPush (urnat p))).
   srapply (EH_refl_L_coh (((concat_p1 (whiskerR p 1))^ @ urnat p) @ concat_1p p)).
 Defined.
 
