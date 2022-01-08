@@ -3,12 +3,8 @@ From HoTT Require Import Basics Types WildCat.
 Global Existing Instances
   isgraph_paths is01cat_paths is0gpd_paths
   | 1000.
-
-Local Definition wlrnat {X} {a : X} {p q r s : a = a} alpha beta :
-  whiskerL p beta @ whiskerR alpha s = whiskerR alpha r @ whiskerL q beta.
-Proof.
-  destruct alpha. destruct beta. exact 1.
-Defined.
+    
+(* Monoidal isomorphisms *)
 
 Local Definition ulnat {X} {a : X} {u v : a = a} p :
   whiskerL 1 p @ concat_1p v = concat_1p u @ p.
@@ -38,17 +34,13 @@ Proof.
   - exact (equiv_concat_l (concat_1p _)^ _).
 Defined.
 
-Local Definition wlrnat_refl_L {X} {a : X} {u v : a = a} (q : u = v) :
-  wlrnat (idpath (idpath a)) q = RightPush^-1 idpath.
+Local Definition wlrnat {X} {a b c : X} {p q : a = b} {r s : b = c} alpha beta
+  : whiskerL p beta @ whiskerR alpha s = whiskerR alpha r @ whiskerL q beta.
 Proof.
-  induction q. reflexivity.
+  destruct alpha. destruct beta. exact 1.
 Defined.
 
-Local Definition wlrnat_refl_R {X} {a : X} {u v : a = a} (p : u = v) :
-  wlrnat p (idpath (idpath a)) = DownPush^-1 idpath.
-Proof.
-  induction p. reflexivity.
-Defined.
+(* Eckmann-Hilton *)
 
 Definition EH {X} {a : X} (p q : idpath a = idpath a) :
   p @ q = q @ p.
@@ -58,6 +50,55 @@ Proof.
   refine (RightPush (urnat q) @@ RightPush (ulnat p)).
 Defined.
 
+(* EH on reflexivity *)
+
+Local Definition wlrnat_refl_L {X} {a b c : X} {p : a = b} {q r : b = c}
+    {alpha : q = r} :
+  wlrnat (idpath p) alpha = RightPush^-1 1.
+Proof.
+  destruct alpha. exact 1.
+Defined.
+
+Local Definition wlrnat_refl_R {X} {a b c : X} {p q : a = b} {r : b = c}
+    {alpha : p = q} :
+  wlrnat alpha (idpath r) = DownPush^-1 1.
+Proof.
+  destruct alpha. exact 1.
+Defined.
+
+(* reworked up to this point only! *)
+
+Local Definition GL {X} {a b : X} {p q : a = b} (theta : p @ 1 = 1 @ q) :
+  ((1 @@ I theta)^) @ ((J^-1 1) @ (I theta @@ 1)) = concat_1p q @ (concat_p1 q)^.
+Proof.
+  revert theta; srapply (equiv_ind I^-1); intro theta.
+  induction theta; induction p.
+  reflexivity.
+Defined.
+
+Local Definition GR {X} {a b : X} {p q : a = b} (theta : p @ 1 = 1 @ q) :
+  ((I theta @@ 1)^) @ ((I^-1 1) @ (1 @@ I theta)) = concat_p1 q @ (concat_1p q)^.
+Proof.
+  revert theta; srapply (equiv_ind I^-1); intro theta.
+  induction theta; induction p.
+  reflexivity.
+Defined.
+
+Local Definition EH_refl_L {X} {a : X} (p : idpath a = idpath a) :
+  EH p idpath = concat_p1 p @ (concat_1p p)^.
+Proof.
+  refine (_ @ GR (ulnat p)).
+  srapply whiskerL; srapply whiskerR.
+  exact (C_refl_R p).
+Defined.
+
+Local Definition EH_refl_R {X} {a : X} (p : idpath a = idpath a) :
+  EH idpath p = concat_1p p @ (concat_p1 p)^.
+Proof.
+  refine (_ @ GL (urnat p)).
+  srapply whiskerL; srapply whiskerR.
+  exact (C_refl_L p).
+Defined.
 
 Section TwoSquares.
 
@@ -100,37 +141,6 @@ Section SquareInv.
 
 End SquareInv.
 
-Local Definition GL {X} {a b : X} {p q : a = b} (theta : p @ 1 = 1 @ q) :
-  ((1 @@ I theta)^) @ ((J^-1 1) @ (I theta @@ 1)) = concat_1p q @ (concat_p1 q)^.
-Proof.
-  revert theta; srapply (equiv_ind I^-1); intro theta.
-  induction theta; induction p.
-  reflexivity.
-Defined.
-
-Local Definition GR {X} {a b : X} {p q : a = b} (theta : p @ 1 = 1 @ q) :
-  ((I theta @@ 1)^) @ ((I^-1 1) @ (1 @@ I theta)) = concat_p1 q @ (concat_1p q)^.
-Proof.
-  revert theta; srapply (equiv_ind I^-1); intro theta.
-  induction theta; induction p.
-  reflexivity.
-Defined.
-
-Local Definition EH_refl_L {X} {a : X} (p : idpath a = idpath a) :
-  EH p idpath = concat_p1 p @ (concat_1p p)^.
-Proof.
-  refine (_ @ GR (ulnat p)).
-  srapply whiskerL; srapply whiskerR.
-  exact (C_refl_R p).
-Defined.
-
-Local Definition EH_refl_R {X} {a : X} (p : idpath a = idpath a) :
-  EH idpath p = concat_1p p @ (concat_p1 p)^.
-Proof.
-  refine (_ @ GL (urnat p)).
-  srapply whiskerL; srapply whiskerR.
-  exact (C_refl_L p).
-Defined.
 
 Local Definition EH_natL {X} {a : X} {x u v : idpath a = idpath a} p :
   whiskerL x p @ EH x v = EH x u @ whiskerR p x.
