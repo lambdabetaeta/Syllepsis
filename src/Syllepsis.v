@@ -8,13 +8,13 @@ Reserved Infix "[I]" (at level 50).
 Local Definition ulnat {X} {a b : X} {p q : a = b} (alpha : p = q) :
   whiskerL 1 alpha @ concat_1p q = concat_1p p @ alpha.
 Proof.
-  destruct p. destruct alpha. exact 1.
+  induction p, alpha. exact 1.
 Defined. 
 
 Local Definition urnat {X} {a b : X} {p q : a = b} (alpha : p = q) :
   whiskerR alpha 1 @ concat_p1 q = concat_p1 p @ alpha.
 Proof.
-  destruct p. destruct alpha. exact 1.
+  induction p, alpha. exact 1.
 Defined. 
 
 Local Definition rightSqueeze {X} {a b : X} {p q : a = b}
@@ -36,15 +36,14 @@ Defined.
 Local Definition wlrnat {X} {a b c : X} {p q : a = b} {r s : b = c} alpha beta
   : whiskerL p beta @ whiskerR alpha s = whiskerR alpha r @ whiskerL q beta.
 Proof.
-  destruct alpha. destruct beta. exact 1.
+  induction alpha, beta. exact 1.
 Defined.
 
 Local Definition hconcatnat {X} {a b c : X} {p r : a = b} 
   {q s : b = c} (alpha : p = r) (beta : q = s)
   : alpha @@ beta = whiskerL p beta @ whiskerR alpha s.
 Proof.
-  destruct alpha. destruct beta. destruct p. destruct q.
-  exact 1.
+  induction alpha, beta, p, q. exact 1.
 Defined.
 
 (* Eckmann-Hilton *)
@@ -64,7 +63,7 @@ Local Definition EH_refl_L_coh {X} {a b c : X} {p q : a = b} {r : b = c} {alpha 
   : (1 @@ theta)^ @ (wlrnat alpha (idpath r) @ (theta @@ 1))
       = concat_1p s @ (concat_p1 s)^.
 Proof.
-  destruct theta. destruct alpha. exact 1.
+  induction theta, alpha. exact 1.
 Defined.
 
 Local Definition EH_refl_L {X} {a : X} (p : idpath a = idpath a) :
@@ -79,7 +78,7 @@ Local Definition EH_refl_R_coh {X} {a b c : X} {p : a = b} {q r : b = c} {alpha 
   : (theta @@ 1)^ @ (wlrnat (idpath p) alpha @ (1 @@ theta))
       = concat_p1 s @ (concat_1p s)^.
 Proof.
-  destruct theta. destruct alpha. exact 1.
+  induction theta, alpha. exact 1.
 Defined.
 
 Local Definition EH_refl_R {X} {a : X} (p : idpath a = idpath a) :
@@ -89,7 +88,7 @@ Proof.
   srapply (EH_refl_R_coh (p:=1) (q:=1) (r:=1) (rightSqueeze (ulnat p))).
 Defined.
 
-(* Naturality of Eckmann - Hilton *)
+(* Naturality of Eckmann-Hilton *)
 
 Local Definition EH_natL {X} {a : X} {x u v : idpath a = idpath a} p :
   whiskerL x p @ EH x v = EH x u @ whiskerR p x.
@@ -103,7 +102,6 @@ Local Definition EH_natR {X} {a : X} {x u v : idpath a = idpath a} p :
 Proof.
   induction p. unfold whiskerR. simpl.
   srapply (downSqueeze^-1 idpath).
-  
 Defined.
 
 (* Some technology about squares *)
@@ -160,9 +158,10 @@ Local Definition sqConcatVSqueeze {X} {a b c : X}
   (phi : p @ 1 = 1 @ q) (theta : r @ 1 = 1 @ s)
   : rightSqueeze phi @@ rightSqueeze theta = rightSqueeze (phi [-] theta).
 Proof.
-  revert phi; srapply (equiv_ind rightSqueeze^-1); intro phi; destruct phi.
-  revert theta; srapply (equiv_ind rightSqueeze^-1); intro theta; destruct theta.
-  destruct p; destruct r; simpl.
+  revert phi; srapply (equiv_ind rightSqueeze^-1); intro phi.
+  revert theta; srapply (equiv_ind rightSqueeze^-1); intro theta.
+  induction phi, theta.
+  induction p, r. simpl.
   exact 1.
 Defined.
 
@@ -227,38 +226,6 @@ Section SquareInv.
 
 End SquareInv.
 
-(* Naturality of Eckmann-Hilton *)
-
-Local Definition EH_natL_sqConcatV' {X} {a : X} {u} (p : idpath (idpath a) = u) :
-  EH_natL p = (whiskerL (whiskerL 1 p) (EH_refl_L u)) @
-              (sqConcatV (ulnat p)^ (squareInv (urnat p))^)^.
-Proof.
-  induction p.
-  reflexivity.
-Defined.
-
-Local Definition EH_natR_sqConcatV' {X} {a : X} {u} (p : idpath (idpath a) = u) :
-  EH_natR p = (whiskerL (whiskerR p 1) (EH_refl_R u)) @
-              (sqConcatV (urnat p)^ (squareInv (ulnat p))^)^.
-Proof.
-  induction p.
-  reflexivity.
-Defined.
-
-Definition EH_natL_sqConcatV {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
-  EH_natL p = (sqConcatV (ulnat p)^ (squareInv (urnat p))^)^.
-Proof.
-  refine (EH_natL_sqConcatV' _ @ _).
-  exact (concat_1p _).
-Defined.
-
-Definition EH_natR_sqConcatV {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
-  EH_natR p = (sqConcatV (urnat p)^ (squareInv (ulnat p))^)^.
-Proof.
-  refine (EH_natR_sqConcatV' _ @ _).
-  exact (concat_1p _).
-Defined.
-
 (*
 
     CUBICAL INTERCHANGE
@@ -283,25 +250,55 @@ Definition cubicalitch {X} {a0 a1 a2 b0 b1 b2 c0 c1 c2 : X}
   {gamma : u @ i2 = i1 @ v} {delta : v @ j2 = j1 @ w}
   : (alpha [-] gamma) [I] (beta [-] delta) = (alpha [I] beta) [-] (gamma [I] delta).
 Proof.
-  destruct i0; destruct i1; destruct i2; destruct j0; destruct j1; destruct j2.
-  (* destruct p. destruct q. destruct r. destruct u. destruct v. destruct w. *)
-  revert alpha; srapply (equiv_ind rightSqueeze^-1); intro alpha; destruct alpha.
-  revert beta; srapply (equiv_ind rightSqueeze^-1); intro beta; destruct beta.
-  revert gamma; srapply (equiv_ind rightSqueeze^-1); intro gamma; destruct gamma.
-  revert delta; srapply (equiv_ind rightSqueeze^-1); intro delta; destruct delta.
-  destruct p; destruct u.
+  induction i0, i1, i2, j0, j1, j2.
+  revert alpha; srapply (equiv_ind rightSqueeze^-1); intro alpha.
+  revert beta; srapply (equiv_ind rightSqueeze^-1); intro beta.
+  revert gamma; srapply (equiv_ind rightSqueeze^-1); intro gamma.
+  revert delta; srapply (equiv_ind rightSqueeze^-1); intro delta.
+  induction alpha, beta, gamma, delta.
+  induction p, u.
   unfold "[I]"; unfold "[-]"; simpl.
   exact 1.
 Defined.
 
+(* Naturality of Eckmann-Hilton *)
+
+Local Definition EH_natL_sqConcatV' {X} {a : X} {u} (p : idpath (idpath a) = u) :
+  EH_natL p = (whiskerL (whiskerL 1 p) (EH_refl_L u)) @
+              (sqConcatV (ulnat p)^ (squareInv (urnat p))^)^.
+Proof.
+  induction p. exact 1.
+Defined.
+
+Local Definition EH_natR_sqConcatV' {X} {a : X} {u} (p : idpath (idpath a) = u) :
+  EH_natR p = (whiskerL (whiskerR p 1) (EH_refl_R u)) @
+              (sqConcatV (urnat p)^ (squareInv (ulnat p))^)^.
+Proof.
+  induction p. exact 1.
+Defined.
+
+Definition EH_natL_sqConcatV {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
+  EH_natL p = (sqConcatV (ulnat p)^ (squareInv (urnat p))^)^.
+Proof.
+  refine (EH_natL_sqConcatV' _ @ _).
+  exact (concat_1p _).
+Defined.
+
+Definition EH_natR_sqConcatV {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
+  EH_natR p = (sqConcatV (urnat p)^ (squareInv (ulnat p))^)^.
+Proof.
+  refine (EH_natR_sqConcatV' _ @ _).
+  exact (concat_1p _).
+Defined.
+
 
 Local Definition DL {X} {a : X} {x y u v : idpath a = idpath a} p q :
-  (whiskerL u p @ whiskerR q y) @ EH v y = EH u x @ (whiskerR p u @ whiskerL y q) :=
-  sqConcatV (EH_natL p) (EH_natR q).
+  (whiskerL u p @ whiskerR q y) @ EH v y = EH u x @ (whiskerR p u @ whiskerL y q)
+    := (EH_natL p) [-] (EH_natR q).
 
 Local Definition DR {X} {a : X} {x y u v : idpath a = idpath a} p q :
-  (whiskerR q x @ whiskerL v p) @ EH v y = EH u x @ (whiskerL x q @ whiskerR p v) :=
-  sqConcatV (EH_natR q) (EH_natL p).
+  (whiskerR q x @ whiskerL v p) @ EH v y = EH u x @ (whiskerL x q @ whiskerR p v)
+    := (EH_natR q) [-] (EH_natL p).
 
 Local Definition S {X} {a : X} {x y u v : idpath a = idpath a} p q :
   DL p q @ whiskerL (EH u x) (wlrnat p q)^ = whiskerR (wlrnat q p) (EH v y) @ DR p q.
