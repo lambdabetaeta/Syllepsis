@@ -1,4 +1,7 @@
 From HoTT Require Import Basics Types.
+  
+Reserved Infix "[-]" (at level 60).
+Reserved Infix "[I]" (at level 50).
 
 (* Monoidal isomorphisms *)
 
@@ -103,7 +106,7 @@ Proof.
   
 Defined.
 
-(* REWORKED ENDS HERE *)
+(* Some technology about squares *)
 
 Section SqConcatV.
 
@@ -135,8 +138,10 @@ Section SqConcatV.
     refine (whiskerR phi bc1 @ _).
     srapply concat_pp_p.
   Defined.
-
+  
 End SqConcatV.
+
+Infix "[-]" := (sqConcatV).
 
   (* 
       a ---1--- a
@@ -153,18 +158,12 @@ End SqConcatV.
 Local Definition sqConcatVSqueeze {X} {a b c : X} 
   {p : a = b} {q : a = b} {r : b = c} {s : b = c}
   (phi : p @ 1 = 1 @ q) (theta : r @ 1 = 1 @ s)
-  : rightSqueeze phi @@ rightSqueeze theta = rightSqueeze (sqConcatV phi theta).
+  : rightSqueeze phi @@ rightSqueeze theta = rightSqueeze (phi [-] theta).
 Proof.
-  set (ss := (concat_p1 p)^ @ phi @ concat_1p q).
-  set (tt := (concat_p1 r)^ @ theta @ concat_1p s).
-  destruct ss. destruct tt. destruct p. destruct r. 
-  unfold sqConcatV. simpl.
-  rewrite concat_1p. rewrite concat_p1.
-  rewrite concat_1p. rewrite concat_p1.
-  rewrite concat_1p. rewrite concat_p1.
-  rewrite concat_1p. rewrite concat_p1.
-  rewrite concat_1p.
-  srapply (hconcatnat phi theta).
+  revert phi; srapply (equiv_ind rightSqueeze^-1); intro phi; destruct phi.
+  revert theta; srapply (equiv_ind rightSqueeze^-1); intro theta; destruct theta.
+  destruct p; destruct r; simpl.
+  exact 1.
 Defined.
 
 Section SqConcatH.
@@ -194,8 +193,7 @@ Section SqConcatH.
     refine (whiskerL _ theta @ _).
     srapply concat_p_pp.
   Defined.
-
-
+  
   (*
     FIXME
     
@@ -207,6 +205,9 @@ Section SqConcatH.
   *)
 
 End SqConcatH.
+
+Infix "[I]" := (sqConcatH).
+
 
 Section SquareInv.
 
@@ -225,6 +226,8 @@ Section SquareInv.
   Defined.
 
 End SquareInv.
+
+(* Naturality of Eckmann-Hilton *)
 
 Local Definition EH_natL_sqConcatV' {X} {a : X} {u} (p : idpath (idpath a) = u) :
   EH_natL p = (whiskerL (whiskerL 1 p) (EH_refl_L u)) @
@@ -255,6 +258,42 @@ Proof.
   refine (EH_natR_sqConcatV' _ @ _).
   exact (concat_1p _).
 Defined.
+
+(*
+
+    CUBICAL INTERCHANGE
+
+    a0 ---i0--- b0 ---j0--- c0
+    |           |           |
+    p   alpha   q    beta   r
+    |           |           |
+    a1 ---i1--- b1 ---j1--- c1
+    |           |           |
+    u   gamma   v   delta   w
+    |           |           |
+    a2 ---i2--- b2 ---j2--- c2
+*)
+
+Definition cubicalitch {X} {a0 a1 a2 b0 b1 b2 c0 c1 c2 : X}
+  {p : a0 = a1} {q : b0 = b1} {r : c0 = c1}
+  {u : a1 = a2} {v : b1 = b2} {w : c1 = c2}
+  {i0 : a0 = b0} {j0 : b0 = c0} {i1 : a1 = b1} {j1 : b1 = c1}
+  {i2 : a2 = b2} {j2 : b2 = c2}
+  {alpha : p @ i1 = i0 @ q} {beta : q @ j1 = j0 @ r}
+  {gamma : u @ i2 = i1 @ v} {delta : v @ j2 = j1 @ w}
+  : (alpha [-] gamma) [I] (beta [-] delta) = (alpha [I] beta) [-] (gamma [I] delta).
+Proof.
+  destruct i0; destruct i1; destruct i2; destruct j0; destruct j1; destruct j2.
+  (* destruct p. destruct q. destruct r. destruct u. destruct v. destruct w. *)
+  revert alpha; srapply (equiv_ind rightSqueeze^-1); intro alpha; destruct alpha.
+  revert beta; srapply (equiv_ind rightSqueeze^-1); intro beta; destruct beta.
+  revert gamma; srapply (equiv_ind rightSqueeze^-1); intro gamma; destruct gamma.
+  revert delta; srapply (equiv_ind rightSqueeze^-1); intro delta; destruct delta.
+  destruct p; destruct u.
+  unfold "[I]"; unfold "[-]"; simpl.
+  exact 1.
+Defined.
+
 
 Local Definition DL {X} {a : X} {x y u v : idpath a = idpath a} p q :
   (whiskerL u p @ whiskerR q y) @ EH v y = EH u x @ (whiskerR p u @ whiskerL y q) :=
