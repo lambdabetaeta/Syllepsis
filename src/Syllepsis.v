@@ -88,22 +88,6 @@ Proof.
   srapply (EH_refl_R_coh (p:=1) (q:=1) (r:=1) (rightSqueeze (ulnat p))).
 Defined.
 
-(* Naturality of Eckmann-Hilton *)
-
-Local Definition EH_natL {X} {a : X} {x u v : idpath a = idpath a} p :
-  whiskerL x p @ EH x v = EH x u @ whiskerR p x.
-Proof.
-  induction p. unfold whiskerL. simpl.
-  srapply (downSqueeze^-1 idpath).
-Defined.
-
-Local Definition EH_natR {X} {a : X} {x u v : idpath a = idpath a} p :
-  whiskerR p x @ EH v x = EH u x @ whiskerL x p.
-Proof.
-  induction p. unfold whiskerR. simpl.
-  srapply (downSqueeze^-1 idpath).
-Defined.
-
 (* Some technology about squares *)
 
 Section SqConcatV.
@@ -207,25 +191,6 @@ End SqConcatH.
 
 Infix "[I]" := (sqConcatH).
 
-
-Section SquareInv.
-
-  Context {X} {a0 a1 b0 b1 : X}.
-  Context {a01 : a0 = a1} {b01 : b0 = b1}.
-  Context {ab0 : a0 = b0} {ab1 : a1 = b1}.
-  Context (phi : ab0 @ b01 = a01 @ ab1).
-
-  Local Definition squareInv :
-    ab1 @ b01^ = a01^ @ ab0.
-  Proof.
-    induction a01; induction b01. simpl. 
-    revert phi; srapply (equiv_ind rightSqueeze^-1); intro phi.
-    induction phi.
-    srapply (rightSqueeze^-1 idpath).
-  Defined.
-
-End SquareInv.
-
 (*
 
     CUBICAL INTERCHANGE
@@ -261,9 +226,46 @@ Proof.
   exact 1.
 Defined.
 
+
+Section SquareInv.
+
+  Context {X} {a0 a1 b0 b1 : X}.
+  Context {a01 : a0 = a1} {b01 : b0 = b1}.
+  Context {ab0 : a0 = b0} {ab1 : a1 = b1}.
+  Context (phi : ab0 @ b01 = a01 @ ab1).
+
+  Local Definition squareInv :
+    ab1 @ b01^ = a01^ @ ab0.
+  Proof.
+    induction a01; induction b01. simpl. 
+    revert phi; srapply (equiv_ind rightSqueeze^-1); intro phi.
+    induction phi.
+    srapply (rightSqueeze^-1 idpath).
+  Defined.
+
+End SquareInv.
+
+
 (* Naturality of Eckmann-Hilton *)
 
-Local Definition EH_natL_sqConcatV' {X} {a : X} {u} (p : idpath (idpath a) = u) :
+Local Definition EHnatL {X} {a : X} {p q r : idpath a = idpath a} 
+    (alpha : p = q)
+  : whiskerR alpha r @ EH q r = EH p r @ whiskerL r alpha.
+Proof.
+  induction alpha. unfold whiskerL. simpl.
+  srapply (downSqueeze^-1 idpath).
+Defined.
+
+Local Definition EHnatR {X} {a : X} {p q r : idpath a = idpath a}
+    (alpha : p = q) 
+  : whiskerL r alpha @ EH r q = EH r p @ whiskerR alpha r.
+Proof.
+  induction alpha. unfold whiskerL. simpl.
+  srapply (downSqueeze^-1 idpath).
+Defined.
+
+
+(* Local Definition EH_natL_sqConcatV' {X} {a : X} {u} (p : idpath (idpath a) = u) :
   EH_natL p = (whiskerL (whiskerL 1 p) (EH_refl_L u)) @
               (sqConcatV (ulnat p)^ (squareInv (urnat p))^)^.
 Proof.
@@ -289,22 +291,32 @@ Definition EH_natR_sqConcatV {X} {a : X} (p : idpath (idpath a) = idpath (idpath
 Proof.
   refine (EH_natR_sqConcatV' _ @ _).
   exact (concat_1p _).
-Defined.
+Defined. *)
 
+Section Hermitian.
+  
+  Context {X} {a : X} {p q r s : idpath a = idpath a}
+    (alpha : p = q) (beta : r = s).
 
-Local Definition DL {X} {a : X} {x y u v : idpath a = idpath a} p q :
-  (whiskerL u p @ whiskerR q y) @ EH v y = EH u x @ (whiskerR p u @ whiskerL y q)
-    := (EH_natL p) [-] (EH_natR q).
+  Local Definition hermitian_top 
+    : (whiskerL p beta @ whiskerR alpha s) @ EH q s
+        = EH p r @ (whiskerR beta p @ whiskerL s alpha)
+    := (EHnatR beta) [-] (EHnatL alpha).
 
-Local Definition DR {X} {a : X} {x y u v : idpath a = idpath a} p q :
-  (whiskerR q x @ whiskerL v p) @ EH v y = EH u x @ (whiskerL x q @ whiskerR p v)
-    := (EH_natR q) [-] (EH_natL p).
+  Local Definition hermitian_bottom
+    : (whiskerR alpha r @ whiskerL q beta) @ EH q s 
+       = EH p r @ (whiskerL r alpha @ whiskerR beta q)
+    := (EHnatL alpha) [-] (EHnatR beta).
+      
+End Hermitian.
 
-Local Definition S {X} {a : X} {x y u v : idpath a = idpath a} p q :
-  DL p q @ whiskerL (EH u x) (wlrnat p q)^ = whiskerR (wlrnat q p) (EH v y) @ DR p q.
+Local Definition hermitian {X} {a : X} 
+  {p q r s : idpath a = idpath a} (alpha : p = q) (beta : r = s)
+  : whiskerR (wlrnat alpha beta) _ @ sesqui_bottom alpha beta 
+    = sesqui_top alpha beta @ whiskerL _ (wlrnat beta alpha)^.
 Proof.
-  induction p; induction q.
-  srapply (rightSqueeze^-1 idpath).
+  induction alpha, beta. simpl.
+  srapply (downSqueeze^-1 1).
 Defined.
 
 Local Definition EL {X} {a : X} (p q : idpath (idpath a) = idpath (idpath a)) :
@@ -336,19 +348,18 @@ Proof.
   revert q01; srapply (equiv_ind rightSqueeze^-1); intro q01.
   revert p12; srapply (equiv_ind rightSqueeze^-1); intro p12.
   revert q12; srapply (equiv_ind rightSqueeze^-1); intro q12.
-  induction p12; induction q12; induction p01; induction q01.
-  induction p0; induction q0.
-  reflexivity.
+  induction p12, q12, p01, q01, p0, q0.
+  exact 1.
 Defined.
 
-Local Definition DL_eq_EL {X} {a : X} (p q : idpath (idpath a) = idpath (idpath a)) :
-  DL p q = EL p q.
+(* Local Definition DL_eq_EL {X} {a : X} (p q : idpath (idpath a) = idpath (idpath a)) :
+  sesqui_top p q = EL q p.
 Proof.
   srapply F.
   all: symmetry.
   - exact (EH_natL_sqConcatV p).
   - exact (EH_natR_sqConcatV q).
-Defined.
+Defined. *)
 
 Local Definition DR_eq_ER {X} {a : X} (p q : idpath (idpath a) = idpath (idpath a)) :
   DR p q = ER p q.
