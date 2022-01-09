@@ -14,7 +14,7 @@ Proof.
   destruct p. destruct alpha. exact 1.
 Defined. 
 
-Local Definition RightPush {X} {a b : X} {p q : a = b}
+Local Definition rightSqueeze {X} {a b : X} {p q : a = b}
   : (p @ 1 = 1 @ q) <~> (p = q).
 Proof.
   refine (equiv_compose' _ _).
@@ -22,7 +22,7 @@ Proof.
   - exact (equiv_concat_l (concat_p1 _)^ _).
 Defined.
 
-Local Definition DownPush {X} {a b : X} {p q : a = b}
+Local Definition downSqueeze {X} {a b : X} {p q : a = b}
   : (1 @ p = q @ 1) <~> (p = q) .
 Proof.
   refine (equiv_compose' _ _).
@@ -41,9 +41,9 @@ Defined.
 Definition EH {X} {a : X} (p q : idpath a = idpath a) :
   p @ q = q @ p.
 Proof.
-  refine (((RightPush (ulnat p) @@ RightPush (urnat q))^) @ _).
+  refine (((rightSqueeze (ulnat p) @@ rightSqueeze (urnat q))^) @ _).
   refine (wlrnat q p @ _).
-  refine (RightPush (urnat q) @@ RightPush (ulnat p)).
+  refine (rightSqueeze (urnat q) @@ rightSqueeze (ulnat p)).
 Defined.
 
 (* EH on reflexivity *)
@@ -60,7 +60,7 @@ Local Definition EH_refl_L {X} {a : X} (p : idpath a = idpath a) :
   EH idpath p = concat_1p p @ (concat_p1 p)^.
 Proof.
   unfold EH. 
-  srapply (EH_refl_L_coh (p:=1) (q:=1) (r:=1) (RightPush (urnat p))).
+  srapply (EH_refl_L_coh (p:=1) (q:=1) (r:=1) (rightSqueeze (urnat p))).
 Defined.
 
 Local Definition EH_refl_R_coh {X} {a b c : X} {p : a = b} {q r : b = c} {alpha : q = r}
@@ -75,7 +75,7 @@ Local Definition EH_refl_R {X} {a : X} (p : idpath a = idpath a) :
   EH p idpath = concat_p1 p @ (concat_1p p)^.
 Proof.
   unfold EH.
-  srapply (EH_refl_R_coh (p:=1) (q:=1) (r:=1) (RightPush (ulnat p))).
+  srapply (EH_refl_R_coh (p:=1) (q:=1) (r:=1) (rightSqueeze (ulnat p))).
 Defined.
 
 (* Naturality of Eckmann - Hilton *)
@@ -84,14 +84,14 @@ Local Definition EH_natL {X} {a : X} {x u v : idpath a = idpath a} p :
   whiskerL x p @ EH x v = EH x u @ whiskerR p x.
 Proof.
   induction p. unfold whiskerL. simpl.
-  srapply (DownPush^-1 idpath).
+  srapply (downSqueeze^-1 idpath).
 Defined.
 
 Local Definition EH_natR {X} {a : X} {x u v : idpath a = idpath a} p :
   whiskerR p x @ EH v x = EH u x @ whiskerL x p.
 Proof.
   induction p. unfold whiskerR. simpl.
-  srapply (DownPush^-1 idpath).
+  srapply (downSqueeze^-1 idpath).
 Defined.
 
 (* REWORKED ENDS HERE *)
@@ -128,9 +128,9 @@ Section SquareInv.
     ab1 @ b01^ = a01^ @ ab0.
   Proof.
     induction a01; induction b01. simpl. 
-    revert phi; srapply (equiv_ind RightPush^-1); intro phi.
+    revert phi; srapply (equiv_ind rightSqueeze^-1); intro phi.
     induction phi.
-    srapply (RightPush^-1 idpath).
+    srapply (rightSqueeze^-1 idpath).
   Defined.
 
 End SquareInv.
@@ -177,23 +177,23 @@ Local Definition S {X} {a : X} {x y u v : idpath a = idpath a} p q :
   DL p q @ whiskerL (EH u x) (wlrnat p q)^ = whiskerR (wlrnat q p) (EH v y) @ DR p q.
 Proof.
   induction p; induction q.
-  srapply (RightPush^-1 idpath).
+  srapply (rightSqueeze^-1 idpath).
 Defined.
 
 Local Definition EL {X} {a : X} (p q : idpath (idpath a) = idpath (idpath a)) :
   (whiskerL 1 p @ whiskerR q 1) @ 1 = 1 @ (whiskerR p 1 @ whiskerL 1 q).
 Proof.
-  srapply RightPush^-1.
-  refine ((RightPush (ulnat p) @@ RightPush (urnat q)) @ _).
-  refine ((RightPush (urnat p) @@ RightPush (ulnat q))^).
+  srapply rightSqueeze^-1.
+  refine ((rightSqueeze (ulnat p) @@ rightSqueeze (urnat q)) @ _).
+  refine ((rightSqueeze (urnat p) @@ rightSqueeze (ulnat q))^).
 Defined.
 
 Local Definition ER {X} {a : X} (p q : idpath (idpath a) = idpath (idpath a)) :
   (whiskerR q 1 @ whiskerL 1 p) @ 1 = 1 @ (whiskerL 1 q @ whiskerR p 1).
 Proof.
-  srapply RightPush^-1.
-  refine ((RightPush (urnat q) @@ RightPush (ulnat p)) @ _).
-  refine ((RightPush (ulnat q) @@ RightPush (urnat p))^).
+  srapply rightSqueeze^-1.
+  refine ((rightSqueeze (urnat q) @@ rightSqueeze (ulnat p)) @ _).
+  refine ((rightSqueeze (ulnat q) @@ rightSqueeze (urnat p))^).
 Defined.
 
 Local Definition F {X} {a b c : X} {p0 p1 p2 : a = b} {q0 q1 q2 : b = c}
@@ -201,14 +201,14 @@ Local Definition F {X} {a b c : X} {p0 p1 p2 : a = b} {q0 q1 q2 : b = c}
   {q01 : q0 @ 1 = 1 @ q1} {q12 : q2 @ 1 = 1 @ q1} {q02 : q0 @ 1 = 1 @ q2} :
   (twoSquares p01^ (squareInv p12)^)^ = p02 ->
   (twoSquares q01^ (squareInv q12)^)^ = q02 ->
-  twoSquares p02 q02 = RightPush^-1 ((RightPush p01 @@ RightPush q01) @ (RightPush p12 @@ RightPush q12)^).
+  twoSquares p02 q02 = rightSqueeze^-1 ((rightSqueeze p01 @@ rightSqueeze q01) @ (rightSqueeze p12 @@ rightSqueeze q12)^).
 Proof.
   intros phi theta.
   induction phi; induction theta.
-  revert p01; srapply (equiv_ind RightPush^-1); intro p01.
-  revert q01; srapply (equiv_ind RightPush^-1); intro q01.
-  revert p12; srapply (equiv_ind RightPush^-1); intro p12.
-  revert q12; srapply (equiv_ind RightPush^-1); intro q12.
+  revert p01; srapply (equiv_ind rightSqueeze^-1); intro p01.
+  revert q01; srapply (equiv_ind rightSqueeze^-1); intro q01.
+  revert p12; srapply (equiv_ind rightSqueeze^-1); intro p12.
+  revert q12; srapply (equiv_ind rightSqueeze^-1); intro q12.
   induction p12; induction q12; induction p01; induction q01.
   induction p0; induction q0.
   reflexivity.
@@ -243,7 +243,7 @@ Defined.
 Local Definition H {X} {a b : X} {a0 a1 a2 a3 a4 a5 : a = b}
   {a10 : a1 = a0} {a12 : a1 = a2} {a23 : a2 = a3}
   {a43 : a4 = a3} {a45 : a4 = a5} {a50 : a5 = a0} :
-  RightPush^-1 (a10 @ a50^) @ whiskerL 1 a45^ = whiskerR a12 1 @ RightPush^-1 (a23 @ a43^) ->
+  rightSqueeze^-1 (a10 @ a50^) @ whiskerL 1 a45^ = whiskerR a12 1 @ rightSqueeze^-1 (a23 @ a43^) ->
   a10^ @ (a12 @ a23) = (a43^ @ (a45 @ a50))^.
 Proof.
   induction a45; induction a43; induction a23; induction a12; induction a50; induction a1.
