@@ -36,6 +36,14 @@ Proof.
   destruct alpha. destruct beta. exact 1.
 Defined.
 
+Local Definition hconcatnat {X} {a b c : X} {p r : a = b} 
+  {q s : b = c} (alpha : p = r) (beta : q = s)
+  : alpha @@ beta = whiskerL p beta @ whiskerR alpha s.
+Proof.
+  destruct alpha. destruct beta. destruct p. destruct q.
+  exact 1.
+Defined.
+
 (* Eckmann-Hilton *)
 
 Definition EH {X} {a : X} (p q : idpath a = idpath a) :
@@ -92,11 +100,12 @@ Local Definition EH_natR {X} {a : X} {x u v : idpath a = idpath a} p :
 Proof.
   induction p. unfold whiskerR. simpl.
   srapply (downSqueeze^-1 idpath).
+  
 Defined.
 
 (* REWORKED ENDS HERE *)
 
-Section TwoSquares.
+Section SqConcatV.
 
   Context {X} {a0 a1 b0 b1 c0 c1 : X}
    {a01 : a0 = a1} {b01 : b0 = b1} {c01 : c0 = c1}
@@ -104,8 +113,20 @@ Section TwoSquares.
    {ab1 : a1 = b1} {bc1 : b1 = c1}
    (phi : ab0 @ b01 = a01 @ ab1)
    (theta : bc0 @ c01 = b01 @ bc1).
+     
+  (* 
+      a0 ---a01--- a1
+      |            |
+     ab0    phi   ab1
+      |            |
+      b0 ---b01--- b1
+      |            |
+     bc0   theta   bc1
+      |            |   
+      c0 ---c01--- c1
+  *)
 
-  Local Definition twoSquares :
+  Local Definition sqConcatV :
     (ab0 @ bc0) @ c01 = a01 @ (ab1 @ bc1).
   Proof.
     refine (concat_pp_p _ _ _ @ _).
@@ -115,7 +136,77 @@ Section TwoSquares.
     srapply concat_pp_p.
   Defined.
 
-End TwoSquares.
+End SqConcatV.
+
+  (* 
+      a ---1--- a
+      |         |
+      p    phi  q
+      |         |
+      b ---1--- b
+      |         |
+      r  theta  s
+      |         |   
+      c ---1--- c
+  *)
+  
+Local Definition sqConcatVSqueeze {X} {a b c : X} 
+  {p : a = b} {q : a = b} {r : b = c} {s : b = c}
+  (phi : p @ 1 = 1 @ q) (theta : r @ 1 = 1 @ s)
+  : rightSqueeze phi @@ rightSqueeze theta = rightSqueeze (sqConcatV phi theta).
+Proof.
+  set (ss := (concat_p1 p)^ @ phi @ concat_1p q).
+  set (tt := (concat_p1 r)^ @ theta @ concat_1p s).
+  destruct ss. destruct tt. destruct p. destruct r. 
+  unfold sqConcatV. simpl.
+  rewrite concat_1p. rewrite concat_p1.
+  rewrite concat_1p. rewrite concat_p1.
+  rewrite concat_1p. rewrite concat_p1.
+  rewrite concat_1p. rewrite concat_p1.
+  rewrite concat_1p.
+  srapply (hconcatnat phi theta).
+Defined.
+
+Section SqConcatH.
+
+  Context {X} {a0 b0 c0 a1 b1 c1 : X}
+    {a01 : a0 = a1} {ab0 : a0 = b0}
+    {ab1 : a1 = b1} {bc0 : b0 = c0} 
+    {bc1 : b1 = c1} {b01 : b0 = b1}
+    {c01 : c0 = c1}
+    (phi : a01 @ ab1 = ab0 @ b01)
+    (theta : b01 @ bc1 = bc0 @ c01).
+
+  (*
+      a0 --ab0-- b0 --bc0-- c0
+      |          |          | 
+     a01   phi  b01  theta  c01 
+      |          |          |
+      a1 --ab1-- b1 --bc1-- c1
+  *)
+  
+  Local Definition sqConcatH :
+    a01 @ (ab1 @ bc1) = (ab0 @ bc0) @ c01.
+  Proof.
+    refine (concat_p_pp _ _ _ @ _).
+    refine (whiskerR phi _ @ _).
+    refine (concat_pp_p _ _ _ @ _).
+    refine (whiskerL _ theta @ _).
+    srapply concat_p_pp.
+  Defined.
+
+
+  (*
+    FIXME
+    
+      a0 ---1--- a0 --bc0-- c0
+      |          |          | 
+      p   phi    p  theta  c01 
+      |          |          |
+      a1 ---1--- a1 --bc1-- c1
+  *)
+
+End SqConcatH.
 
 Section SquareInv.
 
@@ -135,43 +226,43 @@ Section SquareInv.
 
 End SquareInv.
 
-Local Definition EH_natL_twoSquares' {X} {a : X} {u} (p : idpath (idpath a) = u) :
+Local Definition EH_natL_sqConcatV' {X} {a : X} {u} (p : idpath (idpath a) = u) :
   EH_natL p = (whiskerL (whiskerL 1 p) (EH_refl_L u)) @
-              (twoSquares (ulnat p)^ (squareInv (urnat p))^)^.
+              (sqConcatV (ulnat p)^ (squareInv (urnat p))^)^.
 Proof.
   induction p.
   reflexivity.
 Defined.
 
-Local Definition EH_natR_twoSquares' {X} {a : X} {u} (p : idpath (idpath a) = u) :
+Local Definition EH_natR_sqConcatV' {X} {a : X} {u} (p : idpath (idpath a) = u) :
   EH_natR p = (whiskerL (whiskerR p 1) (EH_refl_R u)) @
-              (twoSquares (urnat p)^ (squareInv (ulnat p))^)^.
+              (sqConcatV (urnat p)^ (squareInv (ulnat p))^)^.
 Proof.
   induction p.
   reflexivity.
 Defined.
 
-Definition EH_natL_twoSquares {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
-  EH_natL p = (twoSquares (ulnat p)^ (squareInv (urnat p))^)^.
+Definition EH_natL_sqConcatV {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
+  EH_natL p = (sqConcatV (ulnat p)^ (squareInv (urnat p))^)^.
 Proof.
-  refine (EH_natL_twoSquares' _ @ _).
+  refine (EH_natL_sqConcatV' _ @ _).
   exact (concat_1p _).
 Defined.
 
-Definition EH_natR_twoSquares {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
-  EH_natR p = (twoSquares (urnat p)^ (squareInv (ulnat p))^)^.
+Definition EH_natR_sqConcatV {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
+  EH_natR p = (sqConcatV (urnat p)^ (squareInv (ulnat p))^)^.
 Proof.
-  refine (EH_natR_twoSquares' _ @ _).
+  refine (EH_natR_sqConcatV' _ @ _).
   exact (concat_1p _).
 Defined.
 
 Local Definition DL {X} {a : X} {x y u v : idpath a = idpath a} p q :
   (whiskerL u p @ whiskerR q y) @ EH v y = EH u x @ (whiskerR p u @ whiskerL y q) :=
-  twoSquares (EH_natL p) (EH_natR q).
+  sqConcatV (EH_natL p) (EH_natR q).
 
 Local Definition DR {X} {a : X} {x y u v : idpath a = idpath a} p q :
   (whiskerR q x @ whiskerL v p) @ EH v y = EH u x @ (whiskerL x q @ whiskerR p v) :=
-  twoSquares (EH_natR q) (EH_natL p).
+  sqConcatV (EH_natR q) (EH_natL p).
 
 Local Definition S {X} {a : X} {x y u v : idpath a = idpath a} p q :
   DL p q @ whiskerL (EH u x) (wlrnat p q)^ = whiskerR (wlrnat q p) (EH v y) @ DR p q.
@@ -199,9 +290,9 @@ Defined.
 Local Definition F {X} {a b c : X} {p0 p1 p2 : a = b} {q0 q1 q2 : b = c}
   {p01 : p0 @ 1 = 1 @ p1} {p12 : p2 @ 1 = 1 @ p1} {p02 : p0 @ 1 = 1 @ p2}
   {q01 : q0 @ 1 = 1 @ q1} {q12 : q2 @ 1 = 1 @ q1} {q02 : q0 @ 1 = 1 @ q2} :
-  (twoSquares p01^ (squareInv p12)^)^ = p02 ->
-  (twoSquares q01^ (squareInv q12)^)^ = q02 ->
-  twoSquares p02 q02 = rightSqueeze^-1 ((rightSqueeze p01 @@ rightSqueeze q01) @ (rightSqueeze p12 @@ rightSqueeze q12)^).
+  (sqConcatV p01^ (squareInv p12)^)^ = p02 ->
+  (sqConcatV q01^ (squareInv q12)^)^ = q02 ->
+  sqConcatV p02 q02 = rightSqueeze^-1 ((rightSqueeze p01 @@ rightSqueeze q01) @ (rightSqueeze p12 @@ rightSqueeze q12)^).
 Proof.
   intros phi theta.
   induction phi; induction theta.
@@ -219,8 +310,8 @@ Local Definition DL_eq_EL {X} {a : X} (p q : idpath (idpath a) = idpath (idpath 
 Proof.
   srapply F.
   all: symmetry.
-  - exact (EH_natL_twoSquares p).
-  - exact (EH_natR_twoSquares q).
+  - exact (EH_natL_sqConcatV p).
+  - exact (EH_natR_sqConcatV q).
 Defined.
 
 Local Definition DR_eq_ER {X} {a : X} (p q : idpath (idpath a) = idpath (idpath a)) :
@@ -228,8 +319,8 @@ Local Definition DR_eq_ER {X} {a : X} (p q : idpath (idpath a) = idpath (idpath 
 Proof.
   srapply F.
   all: symmetry.
-  - exact (EH_natR_twoSquares q).
-  - exact (EH_natL_twoSquares p).
+  - exact (EH_natR_sqConcatV q).
+  - exact (EH_natL_sqConcatV p).
 Defined.
 
 Local Definition T {X} {a : X} (p q : idpath (idpath a) = idpath (idpath a)) :
