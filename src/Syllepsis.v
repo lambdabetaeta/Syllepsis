@@ -309,7 +309,7 @@ Section EH_ur_ul.
 
 End EH_ur_ul.
 
-Definition EHnatR_Alex {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
+Definition EH_nat_R {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
   EHnatR p [I] urnat p = ulnat p.
 Proof.
   srapply (EHnatR_coh p @ _). 
@@ -318,7 +318,7 @@ Proof.
   exact 1.
 Defined.
 
-Definition EHnatL_Alex {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
+Definition EH_nat_L {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
   EHnatL p [I] ulnat p = urnat p.
 Proof.
   srapply (EHnatL_coh p @ _). 
@@ -358,13 +358,6 @@ Defined.
 
 (* Triangles (a) and (c) *)
 
-Local Definition triangles {X} {a : X} (p q : idpath (idpath a) = idpath (idpath a))
-  : rightSqueeze (ulnat p) @@ rightSqueeze (urnat q)
-      = rightSqueeze (ulnat p [-] urnat q).
-Proof.
-  srapply sqConcatVSqueeze.
-Defined.
-
 Section Triangle.
 
   Context {X} {a : X} (p q : idpath (idpath a) = idpath (idpath a)).
@@ -381,8 +374,8 @@ Section Triangle.
     rewrite sqConcatHSqueeze.
     srapply ap.
     srapply (cubicalitch _ _ _ _ @ _).
-    srapply (ap (fun z => z [-] _) (EHnatR_Alex _)  @ _).
-    srapply (ap (fun z => _ [-] z) (EHnatL_Alex _)  @ _).
+    srapply (ap (fun z => z [-] _) (EH_nat_R _)  @ _).
+    srapply (ap (fun z => _ [-] z) (EH_nat_L _)  @ _).
     exact 1.
   Defined.
   
@@ -396,8 +389,8 @@ Section Triangle.
     rewrite sqConcatHSqueeze.
     srapply ap.
     srapply (cubicalitch _ _ _ _ @ _).
-    srapply (ap (fun z => z [-] _) (EHnatL_Alex _)  @ _).
-    srapply (ap (fun z => _ [-] z) (EHnatR_Alex _)  @ _).
+    srapply (ap (fun z => z [-] _) (EH_nat_L _)  @ _).
+    srapply (ap (fun z => _ [-] z) (EH_nat_R _)  @ _).
     exact 1.
   Defined.
 
@@ -452,4 +445,4 @@ Proof.
   - srapply moveR_pV.
     symmetry.
     srapply triangleD.
-Defined.
+Qed.
