@@ -1,8 +1,5 @@
 From HoTT Require Import Basics Types.
   
-Reserved Infix "[-]" (at level 60).
-Reserved Infix "[I]" (at level 50).
-
 (* Monoidal isomorphisms *)
 
 Local Definition ulnat {X} {a b : X} {p q : a = b} (alpha : p = q) :
@@ -60,14 +57,14 @@ Defined.
 
 Local Definition EH_refl_L_coh {X} {a b c : X} {p q : a = b} {r : b = c} {alpha : p = q}
   {s : p @ r = q @ r} (theta : whiskerR alpha r = s)
-  : (1 @@ theta)^ @ (wlrnat alpha (idpath r) @ (theta @@ 1))
-      = concat_1p s @ (concat_p1 s)^.
+  : (1 @@ theta)^ @ (wlrnat alpha (idpath r) @ (theta @@ 1)) @ concat_p1 s
+      = concat_1p s.
 Proof.
   induction theta, alpha. exact 1.
 Defined.
 
 Local Definition EH_refl_L {X} {a : X} (p : idpath a = idpath a) :
-  EH idpath p = concat_1p p @ (concat_p1 p)^.
+  EH 1 p @ concat_p1 p = concat_1p p.
 Proof.
   unfold EH. 
   srapply (EH_refl_L_coh (p:=1) (q:=1) (r:=1) (rightSqueeze (urnat p))).
@@ -75,14 +72,14 @@ Defined.
 
 Local Definition EH_refl_R_coh {X} {a b c : X} {p : a = b} {q r : b = c} {alpha : q = r}
   {s : p @ q = p @ r} (theta : whiskerL p alpha = s)
-  : (theta @@ 1)^ @ (wlrnat (idpath p) alpha @ (1 @@ theta))
-      = concat_p1 s @ (concat_1p s)^.
+  : (theta @@ 1)^ @ (wlrnat (idpath p) alpha @ (1 @@ theta)) @ concat_1p s
+      = concat_p1 s.
 Proof.
   induction theta, alpha. exact 1.
 Defined.
 
 Local Definition EH_refl_R {X} {a : X} (p : idpath a = idpath a) :
-  EH p idpath = concat_p1 p @ (concat_1p p)^.
+  EH p idpath @ concat_1p p = concat_p1 p.
 Proof.
   unfold EH.
   srapply (EH_refl_R_coh (p:=1) (q:=1) (r:=1) (rightSqueeze (ulnat p))).
@@ -123,7 +120,7 @@ Section SqConcatV.
   
 End SqConcatV.
 
-Infix "[-]" := (sqConcatV).
+Infix "[-]" := (sqConcatV) (at level 60).
 
   (* 
       a ---1--- a
@@ -137,7 +134,7 @@ Infix "[-]" := (sqConcatV).
       c ---1--- c
   *)
   
-Local Definition sqConcatVSqueeze {X} {a b c : X} 
+Local Definition sqConcatVSqueeze{X} {a b c : X} 
   {p : a = b} {q : a = b} {r : b = c} {s : b = c}
   (phi : p @ 1 = 1 @ q) (theta : r @ 1 = 1 @ s)
   : rightSqueeze phi @@ rightSqueeze theta = rightSqueeze (phi [-] theta).
@@ -176,20 +173,66 @@ Section SqConcatH.
     refine (whiskerL _ theta @ _).
     srapply concat_p_pp.
   Defined.
-  
-  (*
-    FIXME
-    
-      a0 ---1--- a0 --bc0-- c0
-      |          |          | 
-      p   phi    p  theta  c01 
-      |          |          |
-      a1 ---1--- a1 --bc1-- c1
-  *)
 
 End SqConcatH.
 
-Infix "[I]" := (sqConcatH).
+Infix "[I]" := (sqConcatH) (at level 60).
+
+(*
+    a --1-- a --1-- a
+    |       |       | 
+    p  phi  q theta r 
+    |       |       |
+    b --1-- b --1-- b
+*)
+
+Definition sqConcatHSqueeze {X} {a b : X} {p q r : a = b}
+    (phi : p @ 1 = 1 @ q) (theta : q @ 1 = 1 @ r)
+  : rightSqueeze phi @ rightSqueeze theta = rightSqueeze (phi [I] theta).
+Proof.
+  revert phi; srapply (equiv_ind rightSqueeze^-1); intro phi.
+  revert theta; srapply (equiv_ind rightSqueeze^-1); intro theta.
+  induction phi, theta.
+  induction p. simpl.
+  exact 1.
+Defined.
+  
+
+Section SquareInv.
+
+  Context {X} {a0 a1 b0 b1 : X}.
+  Context {a01 : a0 = a1} {b01 : b0 = b1}.
+  Context {ab0 : a0 = b0} {ab1 : a1 = b1}.
+  Context (phi : ab0 @ b01 = a01 @ ab1).
+
+  Local Definition squareInv :
+    ab1 @ b01^ = a01^ @ ab0.
+  Proof.
+    induction a01; induction b01. simpl. 
+    revert phi; srapply (equiv_ind rightSqueeze^-1); intro phi.
+    induction phi.
+    srapply (rightSqueeze^-1 idpath).
+  Defined.
+
+End SquareInv.
+
+Notation "phi ^<-" := (squareInv phi) (at level 20).
+
+(*
+    a --1-- a 
+    |       |
+    p  phi  q
+    |       |
+    b --1-- b
+*)
+
+Definition sqInvSqueeze {X} {a b : X} {p q : a = b} (phi : p @ 1 = 1 @ q)
+  : (rightSqueeze phi)^ = rightSqueeze (phi^<-).
+Proof.
+  revert phi; srapply (equiv_ind rightSqueeze^-1); intro phi.
+  induction phi, p. simpl.
+  exact 1.
+Defined.
 
 (*
 
@@ -211,8 +254,8 @@ Definition cubicalitch {X} {a0 a1 a2 b0 b1 b2 c0 c1 c2 : X}
   {u : a1 = a2} {v : b1 = b2} {w : c1 = c2}
   {i0 : a0 = b0} {j0 : b0 = c0} {i1 : a1 = b1} {j1 : b1 = c1}
   {i2 : a2 = b2} {j2 : b2 = c2}
-  {alpha : p @ i1 = i0 @ q} {beta : q @ j1 = j0 @ r}
-  {gamma : u @ i2 = i1 @ v} {delta : v @ j2 = j1 @ w}
+  (alpha : p @ i1 = i0 @ q) (beta : q @ j1 = j0 @ r)
+  (gamma : u @ i2 = i1 @ v) (delta : v @ j2 = j1 @ w)
   : (alpha [-] gamma) [I] (beta [-] delta) = (alpha [I] beta) [-] (gamma [I] delta).
 Proof.
   induction i0, i1, i2, j0, j1, j2.
@@ -227,23 +270,6 @@ Proof.
 Defined.
 
 
-Section SquareInv.
-
-  Context {X} {a0 a1 b0 b1 : X}.
-  Context {a01 : a0 = a1} {b01 : b0 = b1}.
-  Context {ab0 : a0 = b0} {ab1 : a1 = b1}.
-  Context (phi : ab0 @ b01 = a01 @ ab1).
-
-  Local Definition squareInv :
-    ab1 @ b01^ = a01^ @ ab0.
-  Proof.
-    induction a01; induction b01. simpl. 
-    revert phi; srapply (equiv_ind rightSqueeze^-1); intro phi.
-    induction phi.
-    srapply (rightSqueeze^-1 idpath).
-  Defined.
-
-End SquareInv.
 
 
 (* Naturality of Eckmann-Hilton *)
@@ -266,32 +292,70 @@ Defined.
 
 
 (* Local Definition EH_natL_sqConcatV' {X} {a : X} {u} (p : idpath (idpath a) = u) :
-  EH_natL p = (whiskerL (whiskerL 1 p) (EH_refl_L u)) @
-              (sqConcatV (ulnat p)^ (squareInv (urnat p))^)^.
+  EHnatR p = (whiskerL (whiskerL 1 p) (EH_refl_L u)) @
+              ((ulnat p)^ [-] ((urnat p)^<-)^)^.
 Proof.
   induction p. exact 1.
 Defined.
 
 Local Definition EH_natR_sqConcatV' {X} {a : X} {u} (p : idpath (idpath a) = u) :
-  EH_natR p = (whiskerL (whiskerR p 1) (EH_refl_R u)) @
-              (sqConcatV (urnat p)^ (squareInv (ulnat p))^)^.
+  EHnatL p = (whiskerL (whiskerR p 1) (EH_refl_R u)) @
+              ((urnat p)^ [-] ((ulnat p)^<-)^)^.
 Proof.
   induction p. exact 1.
 Defined.
 
 Definition EH_natL_sqConcatV {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
-  EH_natL p = (sqConcatV (ulnat p)^ (squareInv (urnat p))^)^.
+  EHnatR p = ((ulnat p)^ [-] ((urnat p)^<-)^)^.
 Proof.
   refine (EH_natL_sqConcatV' _ @ _).
   exact (concat_1p _).
 Defined.
 
 Definition EH_natR_sqConcatV {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
-  EH_natR p = (sqConcatV (urnat p)^ (squareInv (ulnat p))^)^.
+  EHnatL p = ((urnat p)^ [-] (squareInv (ulnat p))^)^.
 Proof.
   refine (EH_natR_sqConcatV' _ @ _).
   exact (concat_1p _).
 Defined. *)
+
+Section EH_ur_ul.
+
+  Context {X} {a : X} {p} (alpha : idpath (idpath a) = p).
+
+  Definition EHnatR_coh
+    : EHnatR alpha [I] urnat alpha = whiskerL _ (EH_refl_L p) @ ulnat alpha @ whiskerL _ 1.
+  Proof.
+    induction alpha. exact 1.  
+  Defined.
+  
+  Definition EHnatL_coh 
+    : EHnatL alpha [I] ulnat alpha = whiskerL _ (EH_refl_R p) @ urnat alpha @ whiskerL _ 1.
+  Proof.
+    induction alpha. exact 1.  
+  Defined.
+
+End EH_ur_ul.
+
+Definition EHnatR_Alex {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
+  EHnatR p [I] urnat p = ulnat p.
+Proof.
+  srapply (EHnatR_coh p @ _). 
+  srapply (concat_p1 _ @ _).
+  srapply (concat_1p _ @ _).
+  exact 1.
+Defined.
+
+Definition EHnatL_Alex {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
+  EHnatL p [I] ulnat p = urnat p.
+Proof.
+  srapply (EHnatL_coh p @ _). 
+  srapply (concat_p1 _ @ _).
+  srapply (concat_1p _ @ _).
+  exact 1.
+Defined.
+
+(* Square (b) *)
 
 Section Hermitian.
   
@@ -312,11 +376,39 @@ End Hermitian.
 
 Local Definition hermitian {X} {a : X} 
   {p q r s : idpath a = idpath a} (alpha : p = q) (beta : r = s)
-  : whiskerR (wlrnat alpha beta) _ @ sesqui_bottom alpha beta 
-    = sesqui_top alpha beta @ whiskerL _ (wlrnat beta alpha)^.
+  : whiskerR (wlrnat alpha beta) _ @ hermitian_bottom alpha beta 
+    = hermitian_top alpha beta @ whiskerL _ (wlrnat beta alpha)^.
 Proof.
   induction alpha, beta. simpl.
   srapply (downSqueeze^-1 1).
+Defined.
+
+(* Triangle (a) *)
+
+Local Definition triangles {X} {a : X} (p q : idpath (idpath a) = idpath (idpath a))
+  : rightSqueeze (ulnat p) @@ rightSqueeze (urnat q)
+      = rightSqueeze (ulnat p [-] urnat q).
+Proof.
+  srapply sqConcatVSqueeze.
+Defined.
+
+Section TriangleA.
+
+  Context {X} {a : X} (p q : idpath (idpath a) = idpath (idpath a)).
+
+  Local Definition triangleA :
+    rightSqueeze (EHnatR p [-] EHnatL q)
+     @ (rightSqueeze (urnat p) @@ rightSqueeze (ulnat q))
+      = rightSqueeze (ulnat p) @@ rightSqueeze (urnat q).
+  Proof.
+    rewrite sqConcatVSqueeze.
+    rewrite sqConcatVSqueeze.
+    rewrite sqConcatHSqueeze.
+    srapply ap.
+    srapply (cubicalitch _ _ _ _ @ _).
+    srapply (ap (fun z => z [-] _) (EHnatR_Alex _)  @ _).
+    srapply (ap (fun z => _ [-] z) (EHnatL_Alex _)  @ _).
+    exact 1.
 Defined.
 
 Local Definition EL {X} {a : X} (p q : idpath (idpath a) = idpath (idpath a)) :
@@ -353,7 +445,7 @@ Proof.
 Defined.
 
 (* Local Definition DL_eq_EL {X} {a : X} (p q : idpath (idpath a) = idpath (idpath a)) :
-  sesqui_top p q = EL q p.
+  hermitian_top p q = EL q p.
 Proof.
   srapply F.
   all: symmetry.
