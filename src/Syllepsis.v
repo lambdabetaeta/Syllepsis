@@ -86,7 +86,8 @@ Proof.
   srapply (EH_refl_R_coh (p:=1) (q:=1) (r:=1) (rightSqueeze (ulnat p))).
 Defined.
 
-(* Some technology about squares *)
+
+(* SQUARES (section 5) *)
 
 Section SqConcatV.
 
@@ -271,8 +272,7 @@ Proof.
 Defined.
 
 
-
-(* Naturality of Eckmann-Hilton *)
+(* NATURALITY OF EH (section 6) *)
 
 Local Definition EHnatL {X} {a : X} {p q r : idpath a = idpath a} 
     (alpha : p = q)
@@ -296,13 +296,13 @@ Section EH_ur_ul.
   Context {X} {a : X} {p} (alpha : idpath (idpath a) = p).
 
   Definition EHnatR_coh
-    : EHnatR alpha [I] urnat alpha = whiskerL _ (EH_refl_L p) @ ulnat alpha @ whiskerL _ 1.
+    : EHnatR alpha [I] urnat alpha = whiskerL _ (EH_refl_L p) @ ulnat alpha.
   Proof.
     induction alpha. exact 1.  
   Defined.
   
   Definition EHnatL_coh 
-    : EHnatL alpha [I] ulnat alpha = whiskerL _ (EH_refl_R p) @ urnat alpha @ whiskerL _ 1.
+    : EHnatL alpha [I] ulnat alpha = whiskerL _ (EH_refl_R p) @ urnat alpha.
   Proof.
     induction alpha. exact 1.  
   Defined.
@@ -313,7 +313,6 @@ Definition EH_nat_R {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
   EHnatR p [I] urnat p = ulnat p.
 Proof.
   srapply (EHnatR_coh p @ _). 
-  srapply (concat_p1 _ @ _).
   srapply (concat_1p _ @ _).
   exact 1.
 Defined.
@@ -322,7 +321,6 @@ Definition EH_nat_L {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
   EHnatL p [I] ulnat p = urnat p.
 Proof.
   srapply (EHnatL_coh p @ _). 
-  srapply (concat_p1 _ @ _).
   srapply (concat_1p _ @ _).
   exact 1.
 Defined.
