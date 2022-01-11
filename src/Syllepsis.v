@@ -200,42 +200,6 @@ Proof.
 Defined.
   
 
-Section sqInv.
-
-  Context {X} {a0 a1 b0 b1 : X}.
-  Context {a01 : a0 = a1} {b01 : b0 = b1}.
-  Context {ab0 : a0 = b0} {ab1 : a1 = b1}.
-  Context (phi : ab0 @ b01 = a01 @ ab1).
-
-  Local Definition sqInv :
-    ab1 @ b01^ = a01^ @ ab0.
-  Proof.
-    induction a01; induction b01. simpl. 
-    revert phi; srapply (equiv_ind rightSqueeze^-1); intro phi.
-    induction phi.
-    srapply (rightSqueeze^-1 idpath).
-  Defined.
-
-End sqInv.
-
-Notation "phi ^<-" := (sqInv phi) (at level 20).
-
-(*
-    a --1-- a 
-    |       |
-    p  phi  q
-    |       |
-    b --1-- b
-*)
-
-Definition sqInvSqueeze {X} {a b : X} {p q : a = b} (phi : p @ 1 = 1 @ q)
-  : (rightSqueeze phi)^ = rightSqueeze (phi^<-).
-Proof.
-  revert phi; srapply (equiv_ind rightSqueeze^-1); intro phi.
-  induction phi, p. simpl.
-  exact 1.
-Defined.
-
 (*
 
     CUBICAL INTERCHANGE
