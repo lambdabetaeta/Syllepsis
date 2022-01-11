@@ -54,10 +54,10 @@ Proof.
     @ (rightSqueeze (urnat q) @@ rightSqueeze (ulnat p))).
 Defined.
 
-(* EH on reflexivity *)
+(* EH on reflexivity (Section 4) *)
 
-Local Definition EH_refl_L_coh {X} {a b c : X} {p q : a = b} {r : b = c} {alpha : p = q}
-  {s : p @ r = q @ r} (theta : whiskerR alpha r = s)
+Local Definition EH_refl_L_coh {X} {a b c : X} {p q : a = b} {r : b = c} 
+  {alpha : p = q} {s : p @ r = q @ r} (theta : whiskerR alpha r = s)
   : (1 @@ theta)^ @ wlrnat alpha (idpath r) @ (theta @@ 1) @ concat_p1 s
       = concat_1p s.
 Proof.
@@ -199,14 +199,14 @@ Proof.
 Defined.
   
 
-Section SquareInv.
+Section sqInv.
 
   Context {X} {a0 a1 b0 b1 : X}.
   Context {a01 : a0 = a1} {b01 : b0 = b1}.
   Context {ab0 : a0 = b0} {ab1 : a1 = b1}.
   Context (phi : ab0 @ b01 = a01 @ ab1).
 
-  Local Definition squareInv :
+  Local Definition sqInv :
     ab1 @ b01^ = a01^ @ ab0.
   Proof.
     induction a01; induction b01. simpl. 
@@ -215,9 +215,9 @@ Section SquareInv.
     srapply (rightSqueeze^-1 idpath).
   Defined.
 
-End SquareInv.
+End sqInv.
 
-Notation "phi ^<-" := (squareInv phi) (at level 20).
+Notation "phi ^<-" := (sqInv phi) (at level 20).
 
 (*
     a --1-- a 
