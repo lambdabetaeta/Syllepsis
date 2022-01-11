@@ -274,7 +274,7 @@ Defined.
 
 (* NATURALITY OF EH (section 6) *)
 
-Local Definition EHnatL {X} {a : X} {p q r : idpath a = idpath a} 
+Local Definition EH_nat_L {X} {a : X} {p q r : idpath a = idpath a} 
     (alpha : p = q)
   : whiskerR alpha r @ EH q r = EH p r @ whiskerL r alpha.
 Proof.
@@ -282,7 +282,7 @@ Proof.
   srapply (downSqueeze^-1 idpath).
 Defined.
 
-Local Definition EHnatR {X} {a : X} {p q r : idpath a = idpath a}
+Local Definition EH_nat_R {X} {a : X} {p q r : idpath a = idpath a}
     (alpha : p = q) 
   : whiskerL r alpha @ EH r q = EH r p @ whiskerR alpha r.
 Proof.
@@ -295,32 +295,32 @@ Section EH_ur_ul.
 
   Context {X} {a : X} {p} (alpha : idpath (idpath a) = p).
 
-  Definition EHnatR_coh
-    : EHnatR alpha [I] urnat alpha = whiskerL _ (EH_refl_L p) @ ulnat alpha.
+  Definition EH_nat_R_coh
+    : EH_nat_R alpha [I] urnat alpha = whiskerL _ (EH_refl_L p) @ ulnat alpha.
   Proof.
     induction alpha. exact 1.  
   Defined.
   
-  Definition EHnatL_coh 
-    : EHnatL alpha [I] ulnat alpha = whiskerL _ (EH_refl_R p) @ urnat alpha.
+  Definition EH_nat_L_coh 
+    : EH_nat_L alpha [I] ulnat alpha = whiskerL _ (EH_refl_R p) @ urnat alpha.
   Proof.
     induction alpha. exact 1.  
   Defined.
 
 End EH_ur_ul.
 
-Definition EH_nat_R {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
-  EHnatR p [I] urnat p = ulnat p.
+Definition EH_nat_iso_R {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
+  EH_nat_R p [I] urnat p = ulnat p.
 Proof.
-  srapply (EHnatR_coh p @ _). 
+  srapply (EH_nat_R_coh p @ _). 
   srapply (concat_1p _ @ _).
   exact 1.
 Defined.
 
-Definition EH_nat_L {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
-  EHnatL p [I] ulnat p = urnat p.
+Definition EH_nat_iso_L {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
+  EH_nat_L p [I] ulnat p = urnat p.
 Proof.
-  srapply (EHnatL_coh p @ _). 
+  srapply (EH_nat_L_coh p @ _). 
   srapply (concat_1p _ @ _).
   exact 1.
 Defined.
@@ -335,19 +335,19 @@ Section Hermitian.
   Local Definition hermitian_top 
     : (whiskerL p beta @ whiskerR alpha s) @ EH q s
         = EH p r @ (whiskerR beta p @ whiskerL s alpha)
-    := (EHnatR beta) [-] (EHnatL alpha).
+    := (EH_nat_R beta) [-] (EH_nat_L alpha).
 
   Local Definition hermitian_bottom
     : (whiskerR alpha r @ whiskerL q beta) @ EH q s 
        = EH p r @ (whiskerL r alpha @ whiskerR beta q)
-    := (EHnatL alpha) [-] (EHnatR beta).
+    := (EH_nat_L alpha) [-] (EH_nat_R beta).
       
 End Hermitian.
 
 Local Definition hermitian {X} {a : X} 
   {p q r s : idpath a = idpath a} (alpha : p = q) (beta : r = s)
-  : whiskerR (wlrnat alpha beta) _ @ ((EHnatL alpha) [-] (EHnatR beta))
-    @ whiskerL _ (wlrnat beta alpha) = ((EHnatR beta) [-] (EHnatL alpha)).
+  : whiskerR (wlrnat alpha beta) _ @ ((EH_nat_L alpha) [-] (EH_nat_R beta))
+    @ whiskerL _ (wlrnat beta alpha) = ((EH_nat_R beta) [-] (EH_nat_L alpha)).
 Proof.
   induction alpha, beta.
   cbn. srapply moveR_pM.
@@ -363,7 +363,7 @@ Section Triangle.
   Check hermitian q p.
 
   Local Definition triangleU :
-    rightSqueeze (EHnatR p [-] EHnatL q)
+    rightSqueeze (EH_nat_R p [-] EH_nat_L q)
      @ (rightSqueeze (urnat p) @@ rightSqueeze (ulnat q))
       = rightSqueeze (ulnat p) @@ rightSqueeze (urnat q).
   Proof.
@@ -372,13 +372,13 @@ Section Triangle.
     rewrite sqConcatHSqueeze.
     srapply ap.
     srapply (cubicalitch _ _ _ _ @ _).
-    srapply (ap (fun z => z [-] _) (EH_nat_R _)  @ _).
-    srapply (ap (fun z => _ [-] z) (EH_nat_L _)  @ _).
+    srapply (ap (fun z => z [-] _) (EH_nat_iso_R _)  @ _).
+    srapply (ap (fun z => _ [-] z) (EH_nat_iso_L _)  @ _).
     exact 1.
   Defined.
   
   Local Definition triangleD :
-    rightSqueeze (EHnatL q [-] EHnatR p)
+    rightSqueeze (EH_nat_L q [-] EH_nat_R p)
      @ (rightSqueeze (ulnat q) @@ rightSqueeze (urnat p))
       = rightSqueeze (urnat q) @@ rightSqueeze (ulnat p).
   Proof.
@@ -387,8 +387,8 @@ Section Triangle.
     rewrite sqConcatHSqueeze.
     srapply ap.
     srapply (cubicalitch _ _ _ _ @ _).
-    srapply (ap (fun z => z [-] _) (EH_nat_L _)  @ _).
-    srapply (ap (fun z => _ [-] z) (EH_nat_R _)  @ _).
+    srapply (ap (fun z => z [-] _) (EH_nat_iso_L _)  @ _).
+    srapply (ap (fun z => _ [-] z) (EH_nat_iso_R _)  @ _).
     exact 1.
   Defined.
 
@@ -430,8 +430,8 @@ Definition syllepsis {X} {a : X} (p q : idpath (idpath a) = idpath (idpath a))
   : EH p q @ EH q p = 1.
 Proof.
   srapply syllepsis_gen.
-  - srapply (EHnatR p [-] EHnatL q).
-  - srapply (EHnatL q [-] EHnatR p).
+  - srapply (EH_nat_R p [-] EH_nat_L q).
+  - srapply (EH_nat_L q [-] EH_nat_R p).
   - srapply moveL_Vp.
     refine (concat_p_pp _ _ _ @ _).
     Check (hermitian q p).
