@@ -36,12 +36,6 @@ Proof.
   induction alpha, beta. exact 1.
 Defined.
 
-Local Definition hconcatnat {X} {a b c : X} {p r : a = b} 
-  {q s : b = c} (alpha : p = r) (beta : q = s)
-  : alpha @@ beta = whiskerL p beta @ whiskerR alpha s.
-Proof.
-  induction alpha, beta, p, q. exact 1.
-Defined.
 
 (* Eckmann-Hilton *)
 
@@ -324,8 +318,6 @@ Section Triangle.
 
   Context {X} {a : X} (p q : idpath (idpath a) = idpath (idpath a)).
   
-  Check hermitian q p.
-
   Local Definition triangleU :
     rightSqueeze (EH_nat_R p [-] EH_nat_L q)
      @ (rightSqueeze (urnat p) @@ rightSqueeze (ulnat q))
@@ -398,7 +390,6 @@ Proof.
   - srapply (EH_nat_L q [-] EH_nat_R p).
   - srapply moveL_Vp.
     refine (concat_p_pp _ _ _ @ _).
-    Check (hermitian q p).
     srapply (hermitian q p).
   - refine (concat_pp_p _ _ _ @ _).
     srapply moveR_Vp.
