@@ -285,24 +285,24 @@ Defined.
 
 (* Square (b) *)
 
-Section Hermitian.
+Section DoubleNat.
   
   Context {X} {a : X} {p q r s : idpath a = idpath a}
     (alpha : p = q) (beta : r = s).
 
-  Local Definition hermitian_top 
+  Local Definition doublenat_top. 
     : (whiskerL p beta @ whiskerR alpha s) @ EH q s
         = EH p r @ (whiskerR beta p @ whiskerL s alpha)
     := (EH_nat_R beta) [-] (EH_nat_L alpha).
 
-  Local Definition hermitian_bottom
+  Local Definition doublenat_bottom.
     : (whiskerR alpha r @ whiskerL q beta) @ EH q s 
        = EH p r @ (whiskerL r alpha @ whiskerR beta q)
     := (EH_nat_L alpha) [-] (EH_nat_R beta).
       
-End Hermitian.
+End DoubleNat.
 
-Local Definition hermitian {X} {a : X} 
+Local Definition doubleNat {X} {a : X} 
   {p q r s : idpath a = idpath a} (alpha : p = q) (beta : r = s)
   : whiskerR (wlrnat alpha beta) _ @ ((EH_nat_L alpha) [-] (EH_nat_R beta))
     @ whiskerL _ (wlrnat beta alpha) = ((EH_nat_R beta) [-] (EH_nat_L alpha)).
