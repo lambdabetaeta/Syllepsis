@@ -270,17 +270,13 @@ End EH_ur_ul.
 Definition EH_nat_iso_R {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
   EH_nat_R p [I] urnat p = ulnat p.
 Proof.
-  srapply (EH_nat_R_coh p @ _). 
-  srapply (concat_1p _ @ _).
-  exact 1.
+  srapply (EH_nat_R_coh p @ concat_1p _). 
 Defined.
 
 Definition EH_nat_iso_L {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
   EH_nat_L p [I] ulnat p = urnat p.
 Proof.
-  srapply (EH_nat_L_coh p @ _). 
-  srapply (concat_1p _ @ _).
-  exact 1.
+  srapply (EH_nat_L_coh p @ concat_1p _). 
 Defined.
 
 (* Square (b) *)
