@@ -45,7 +45,8 @@ Proof.
   exact (
     (rightSqueeze (ulnat p) @@ rightSqueeze (urnat q))^
     @ wlrnat q p
-    @ (rightSqueeze (urnat q) @@ rightSqueeze (ulnat p))).
+    @ (rightSqueeze (urnat q) @@ rightSqueeze (ulnat p))
+  ).
 Defined.
 
 (* EH on reflexivity (Section 4) *)
@@ -193,7 +194,6 @@ Proof.
   exact 1.
 Defined.
   
-
 (*
 
     CUBICAL INTERCHANGE
@@ -281,23 +281,6 @@ Defined.
 
 (* Square (b) *)
 
-Section DoubleNat.
-  
-  Context {X} {a : X} {p q r s : idpath a = idpath a}
-    (alpha : p = q) (beta : r = s).
-
-  Local Definition doublenat_top
-    : (whiskerL p beta @ whiskerR alpha s) @ EH q s
-        = EH p r @ (whiskerR beta p @ whiskerL s alpha)
-    := (EH_nat_R beta) [-] (EH_nat_L alpha).
-
-  Local Definition doublenat_bottom
-    : (whiskerR alpha r @ whiskerL q beta) @ EH q s 
-       = EH p r @ (whiskerL r alpha @ whiskerR beta q)
-    := (EH_nat_L alpha) [-] (EH_nat_R beta).
-      
-End DoubleNat.
-
 Local Definition doubleNat {X} {a : X} 
   {p q r s : idpath a = idpath a} (alpha : p = q) (beta : r = s)
   : whiskerR (wlrnat alpha beta) _ @ ((EH_nat_L alpha) [-] (EH_nat_R beta))
@@ -366,14 +349,16 @@ Section Syllepsis.
   (* syllepsis *)
   Local Lemma syllepsis_gen : (a12 @ a24 @ a46) @ (a65 @ a53 @ a31) = 1.
   Proof.
-    induction a12, a46, a65, a24, a53.
+    induction a31, a53, a65, a24.
     cbn in H_sq.
-    revert H_sq; srapply (equiv_ind rightSqueeze^-1); intro H_sq; induction H_sq.
-    rewrite <- H_tr_lo in H_tr_up.
-    simpl in H_tr_up.
-    cbn.
-    rewrite H_tr_up.
-    exact 1.
+    revert H_tr_up. revert H_tr_lo.
+    revert H_sq; srapply (equiv_ind rightSqueeze^-1); intro H_sq.
+    induction H_sq; clear H_sq.
+    revert theta; srapply (equiv_ind rightSqueeze^-1); intro theta.
+    induction theta.
+    intro H_tr_lo. intro H_tr_up.
+    induction H_tr_lo.
+    hott_simpl.
   Qed.
 
 End Syllepsis.
