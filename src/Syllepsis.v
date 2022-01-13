@@ -290,12 +290,12 @@ Section DoubleNat.
   Context {X} {a : X} {p q r s : idpath a = idpath a}
     (alpha : p = q) (beta : r = s).
 
-  Local Definition doublenat_top. 
+  Local Definition doublenat_top
     : (whiskerL p beta @ whiskerR alpha s) @ EH q s
         = EH p r @ (whiskerR beta p @ whiskerL s alpha)
     := (EH_nat_R beta) [-] (EH_nat_L alpha).
 
-  Local Definition doublenat_bottom.
+  Local Definition doublenat_bottom
     : (whiskerR alpha r @ whiskerL q beta) @ EH q s 
        = EH p r @ (whiskerL r alpha @ whiskerR beta q)
     := (EH_nat_L alpha) [-] (EH_nat_R beta).
@@ -323,9 +323,9 @@ Section Triangle.
      @ (rightSqueeze (urnat p) @@ rightSqueeze (ulnat q))
       = rightSqueeze (ulnat p) @@ rightSqueeze (urnat q).
   Proof.
-    rewrite sqConcatVSqueeze.
-    rewrite sqConcatVSqueeze.
-    rewrite sqConcatHSqueeze.
+    refine (whiskerL _ (sqConcatVSqueeze (urnat p) (ulnat q)) @ _).
+    refine (sqConcatHSqueeze _ _ @ _).
+    refine (_ @ (sqConcatVSqueeze (ulnat p) (urnat q))^).
     srapply ap.
     srapply (cubicalitch _ _ _ _ @ _).
     srapply (ap (fun z => z [-] _) (EH_nat_iso_R _)  @ _).
@@ -338,9 +338,9 @@ Section Triangle.
      @ (rightSqueeze (ulnat q) @@ rightSqueeze (urnat p))
       = rightSqueeze (urnat q) @@ rightSqueeze (ulnat p).
   Proof.
-    rewrite sqConcatVSqueeze.
-    rewrite sqConcatVSqueeze.
-    rewrite sqConcatHSqueeze.
+    refine (whiskerL _ (sqConcatVSqueeze (ulnat q) (urnat p)) @ _).
+    refine (sqConcatHSqueeze _ _ @ _).
+    refine (_ @ (sqConcatVSqueeze (urnat q) (ulnat p))^).
     srapply ap.
     srapply (cubicalitch _ _ _ _ @ _).
     srapply (ap (fun z => z [-] _) (EH_nat_iso_L _)  @ _).
@@ -390,7 +390,7 @@ Proof.
   - srapply (EH_nat_L q [-] EH_nat_R p).
   - srapply moveL_Vp.
     refine (concat_p_pp _ _ _ @ _).
-    srapply (hermitian q p).
+    srapply (doubleNat q p).
   - refine (concat_pp_p _ _ _ @ _).
     srapply moveR_Vp.
     srapply (_ @ (concat_p1 _)^).
