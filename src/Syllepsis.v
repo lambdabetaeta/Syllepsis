@@ -119,29 +119,6 @@ End SqConcatV.
 
 Infix "[-]" := (sqConcatV) (at level 60).
 
-  (* 
-      a ---1--- a
-      |         |
-      p    phi  q
-      |         |
-      b ---1--- b
-      |         |
-      r  theta  s
-      |         |   
-      c ---1--- c
-  *)
-  
-Local Definition sqConcatVSqueeze{X} {a b c : X} 
-  {p : a = b} {q : a = b} {r : b = c} {s : b = c}
-  (phi : p @ 1 = 1 @ q) (theta : r @ 1 = 1 @ s)
-  : rightSqueeze phi @@ rightSqueeze theta = rightSqueeze (phi [-] theta).
-Proof.
-  revert phi; srapply (equiv_ind rightSqueeze^-1); intro phi.
-  revert theta; srapply (equiv_ind rightSqueeze^-1); intro theta.
-  induction phi, theta.
-  induction p, r. simpl.
-  exact 1.
-Defined.
 
 Section SqConcatH.
 
@@ -175,25 +152,6 @@ End SqConcatH.
 
 Infix "[I]" := (sqConcatH) (at level 60).
 
-(*
-    a --1-- a --1-- a
-    |       |       | 
-    p  phi  q theta r 
-    |       |       |
-    b --1-- b --1-- b
-*)
-
-Definition sqConcatHSqueeze {X} {a b : X} {p q r : a = b}
-    (phi : p @ 1 = 1 @ q) (theta : q @ 1 = 1 @ r)
-  : rightSqueeze phi @ rightSqueeze theta = rightSqueeze (phi [I] theta).
-Proof.
-  revert phi; srapply (equiv_ind rightSqueeze^-1); intro phi.
-  revert theta; srapply (equiv_ind rightSqueeze^-1); intro theta.
-  induction phi, theta.
-  induction p. simpl.
-  exact 1.
-Defined.
-  
 
 (* NATURALITY OF EH (section 6) *)
 
