@@ -194,41 +194,6 @@ Proof.
   exact 1.
 Defined.
   
-(*
-
-    CUBICAL INTERCHANGE
-
-    a0 ---i0--- b0 ---j0--- c0
-    |           |           |
-    p   alpha   q    beta   r
-    |           |           |
-    a1 ---i1--- b1 ---j1--- c1
-    |           |           |
-    u   gamma   v   delta   w
-    |           |           |
-    a2 ---i2--- b2 ---j2--- c2
-*)
-
-Definition cubicalitch {X} {a0 a1 a2 b0 b1 b2 c0 c1 c2 : X}
-  {p : a0 = a1} {q : b0 = b1} {r : c0 = c1}
-  {u : a1 = a2} {v : b1 = b2} {w : c1 = c2}
-  {i0 : a0 = b0} {j0 : b0 = c0} {i1 : a1 = b1} {j1 : b1 = c1}
-  {i2 : a2 = b2} {j2 : b2 = c2}
-  (alpha : p @ i1 = i0 @ q) (beta : q @ j1 = j0 @ r)
-  (gamma : u @ i2 = i1 @ v) (delta : v @ j2 = j1 @ w)
-  : (alpha [-] gamma) [I] (beta [-] delta) = (alpha [I] beta) [-] (gamma [I] delta).
-Proof.
-  induction i0, i1, i2, j0, j1, j2.
-  revert alpha; srapply (equiv_ind rightSqueeze^-1); intro alpha.
-  revert beta; srapply (equiv_ind rightSqueeze^-1); intro beta.
-  revert gamma; srapply (equiv_ind rightSqueeze^-1); intro gamma.
-  revert delta; srapply (equiv_ind rightSqueeze^-1); intro delta.
-  induction alpha, beta, gamma, delta.
-  induction p, u.
-  unfold "[I]"; unfold "[-]"; simpl.
-  exact 1.
-Defined.
-
 
 (* NATURALITY OF EH (section 6) *)
 
@@ -284,81 +249,86 @@ Defined.
 Local Definition doubleNat {X} {a : X} 
   {p q r s : idpath a = idpath a} (alpha : p = q) (beta : r = s)
   : whiskerR (wlrnat alpha beta) _ @ ((EH_nat_L alpha) [-] (EH_nat_R beta))
-    @ whiskerL _ (wlrnat beta alpha) = ((EH_nat_R beta) [-] (EH_nat_L alpha)).
+    =  ((EH_nat_R beta) [-] (EH_nat_L alpha)) @ (whiskerL _ (wlrnat beta alpha))^.
 Proof.
   induction alpha, beta.
-  cbn. srapply moveR_pM.
   srapply (downSqueeze^-1 1).
 Defined.
 
 (* Triangles (a) and (c) *)
 
-Section Triangle.
+(* Triangles (a) and (c) *)
 
-  Context {X} {a : X} (p q : idpath (idpath a) = idpath (idpath a)).
-  
-  Local Definition triangleU :
-    rightSqueeze (EH_nat_R p [-] EH_nat_L q)
-     @ (rightSqueeze (urnat p) @@ rightSqueeze (ulnat q))
-      = rightSqueeze (ulnat p) @@ rightSqueeze (urnat q).
+Section Triangle_gen.
+
+  Context {X} {a b c : X} {p q r : a = b} {u v w : b = c}
+    {alpha : p @ 1 = 1 @ q} {beta : q @ 1 = 1 @ r}
+    {gamma : u @ 1 = 1 @ v} {delta : v @ 1 = 1 @ w}
+    {phi : p @ 1 = 1 @ r} {theta : u @ 1 = 1 @ w}
+    (assn1 : alpha [I] beta = phi)
+    (assn2 : gamma [I] delta = theta).
+
+  (* We assume a setup of the form
+     a ---1--- a ---1--- a                a --- 1 --- a
+     |         |         |                |           |
+     p  alpha  q  beta   r                p    phi    r
+     |         |         |                |           |    
+     b ---1--- b ---1--- b                b --- 1 --- b
+     |         |         |                |           |
+     u  gamma  v  delta  w                u   theta   w
+     |         |         |                |           |
+     c ---1--- c ---1--- c                c --- 1 --- c
+    and moreover that
+       alpha [I] beta = phi
+       gamma [I] delta  = theta
+    Then, writing rSq := rightSqueeze, we can prove that 
+       rSq (phi [-] theta) = (rSq alpha @@ rSq gamma) @ (rSq beta @@ rSq delta)
+  *) 
+
+  Local Definition triangle :
+    rightSqueeze (alpha [-] gamma) @ (rightSqueeze beta @@ rightSqueeze delta) 
+      = (rightSqueeze phi @@ rightSqueeze theta).
   Proof.
-    refine (whiskerL _ (sqConcatVSqueeze (urnat p) (ulnat q)) @ _).
-    refine (sqConcatHSqueeze _ _ @ _).
-    refine (_ @ (sqConcatVSqueeze (ulnat p) (urnat q))^).
-    srapply ap.
-    srapply (cubicalitch _ _ _ _ @ _).
-    srapply (ap (fun z => z [-] _) (EH_nat_iso_R _)  @ _).
-    srapply (ap (fun z => _ [-] z) (EH_nat_iso_L _)  @ _).
+    induction assn1, assn2; clear assn1. clear assn2.
+    revert alpha; srapply (equiv_ind rightSqueeze^-1); intro alpha; induction alpha.
+    revert beta; srapply (equiv_ind rightSqueeze^-1); intro beta; induction beta.
+    revert gamma; srapply (equiv_ind rightSqueeze^-1); intro gamma; induction gamma.
+    revert delta; srapply (equiv_ind rightSqueeze^-1); intro delta; induction delta.
+    induction p, u.
+    simpl.
     exact 1.
   Defined.
-  
-  Local Definition triangleD :
-    rightSqueeze (EH_nat_L q [-] EH_nat_R p)
-     @ (rightSqueeze (ulnat q) @@ rightSqueeze (urnat p))
-      = rightSqueeze (urnat q) @@ rightSqueeze (ulnat p).
-  Proof.
-    refine (whiskerL _ (sqConcatVSqueeze (ulnat q) (urnat p)) @ _).
-    refine (sqConcatHSqueeze _ _ @ _).
-    refine (_ @ (sqConcatVSqueeze (urnat q) (ulnat p))^).
-    srapply ap.
-    srapply (cubicalitch _ _ _ _ @ _).
-    srapply (ap (fun z => z [-] _) (EH_nat_iso_L _)  @ _).
-    srapply (ap (fun z => _ [-] z) (EH_nat_iso_R _)  @ _).
-    exact 1.
-  Defined.
 
-End Triangle.
-
+End Triangle_gen.
 
 Section Syllepsis.
 
   Context {X} {a b : X} {a1 a2 a3 a4 a5 a6 : a = b}
-    {a12 : a1 = a2} {a31 : a3 = a1} {a24 : a2 = a4}
-    {a53 : a5 = a3} {a46 : a4 = a6} {a65 : a6 = a5}
+    {a21 : a2 = a1} {a31 : a3 = a1} {a24 : a2 = a4}
+    {a53 : a5 = a3} {a46 : a4 = a6} {a56 : a5 = a6}
     {phi : a2 @ 1 = 1 @ a3} {theta : a4 @ 1 = 1 @ a5}.
 
   (* commuting square *)
-  Hypothesis (H_sq : theta @ whiskerL 1 a53 = (whiskerR a24 1)^ @ phi).
+  Hypothesis (H_sq : whiskerR a24 1 @ theta = phi @ (whiskerL 1 a53)^).
 
   (* commuting upper triangle *)
-  Hypothesis (H_tr_up : a12 @ rightSqueeze phi @ a31 = 1).
+  Hypothesis (H_tr_up : rightSqueeze phi @ a31 = a21).
 
   (* commuting lower triangle *)
-  Hypothesis (H_tr_lo : a46 @ a65 = rightSqueeze theta).
+  Hypothesis (H_tr_lo : rightSqueeze theta @ a56 = a46).
 
   (* syllepsis *)
-  Local Lemma syllepsis_gen : (a12 @ a24 @ a46) @ (a65 @ a53 @ a31) = 1.
+  Local Lemma syllepsis_gen : (a21^ @ a24 @ a46) @ (a56^ @ a53 @ a31) = 1.
   Proof.
-    induction a31, a53, a65, a24.
+    induction a21, a56, a24, a53.
     cbn in H_sq.
     revert H_tr_up. revert H_tr_lo.
-    revert H_sq; srapply (equiv_ind rightSqueeze^-1); intro H_sq.
+    revert H_sq; srapply (equiv_ind downSqueeze^-1); intro H_sq.
     induction H_sq; clear H_sq.
-    revert theta; srapply (equiv_ind rightSqueeze^-1); intro theta.
-    induction theta.
     intro H_tr_lo. intro H_tr_up.
-    induction H_tr_lo.
     hott_simpl.
+    symmetry in H_tr_lo. induction H_tr_lo.
+    exact H_tr_up.
   Qed.
 
 End Syllepsis.
@@ -366,17 +336,8 @@ End Syllepsis.
 Definition syllepsis {X} {a : X} (p q : idpath (idpath a) = idpath (idpath a))
   : EH p q @ EH q p = 1.
 Proof.
-  srapply syllepsis_gen.
-  - srapply (EH_nat_R p [-] EH_nat_L q).
-  - srapply (EH_nat_L q [-] EH_nat_R p).
-  - srapply moveL_Vp.
-    refine (concat_p_pp _ _ _ @ _).
-    srapply (doubleNat q p).
-  - refine (concat_pp_p _ _ _ @ _).
-    srapply moveR_Vp.
-    srapply (_ @ (concat_p1 _)^).
-    srapply triangleU.
-  - srapply moveR_pV.
-    symmetry.
-    srapply triangleD.
+  rapply syllepsis_gen.
+  - exact (doubleNat q p). 
+  - srapply (triangle (EH_nat_iso_R p) (EH_nat_iso_L q)).
+  - srapply (triangle (EH_nat_iso_L q) (EH_nat_iso_R p)).
 Qed.
