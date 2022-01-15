@@ -155,16 +155,16 @@ Infix "[I]" := (sqConcatH) (at level 60).
 
 (* NATURALITY OF EH (section 6) *)
 
-Local Definition EH_nat_L {X} {a : X} {p q r : idpath a = idpath a} 
-    (alpha : p = q)
+Local Definition EH_nat_L {X} {a : X} {p q : idpath a = idpath a} 
+    (r : idpath a = idpath a) (alpha : p = q)
   : whiskerR alpha r @ EH q r = EH p r @ whiskerL r alpha.
 Proof.
   induction alpha. unfold whiskerL. simpl.
   srapply (downSqueeze^-1 idpath).
 Defined.
 
-Local Definition EH_nat_R {X} {a : X} {p q r : idpath a = idpath a}
-    (alpha : p = q) 
+Local Definition EH_nat_R {X} {a : X} {p q : idpath a = idpath a}
+    (r : idpath a = idpath a) (alpha : p = q) 
   : whiskerL r alpha @ EH r q = EH r p @ whiskerR alpha r.
 Proof.
   induction alpha. unfold whiskerL. simpl.
@@ -177,13 +177,13 @@ Section EH_ur_ul.
   Context {X} {a : X} {p} (alpha : idpath (idpath a) = p).
 
   Definition EH_nat_R_coh
-    : EH_nat_R alpha [I] urnat alpha = whiskerL _ (EH_refl_L p) @ ulnat alpha.
+    : EH_nat_R 1 alpha [I] urnat alpha = whiskerL _ (EH_refl_L p) @ ulnat alpha.
   Proof.
     induction alpha. exact 1.  
   Defined.
   
   Definition EH_nat_L_coh 
-    : EH_nat_L alpha [I] ulnat alpha = whiskerL _ (EH_refl_R p) @ urnat alpha.
+    : EH_nat_L 1 alpha [I] ulnat alpha = whiskerL _ (EH_refl_R p) @ urnat alpha.
   Proof.
     induction alpha. exact 1.  
   Defined.
@@ -191,13 +191,13 @@ Section EH_ur_ul.
 End EH_ur_ul.
 
 Definition EH_nat_iso_R {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
-  EH_nat_R p [I] urnat p = ulnat p.
+  EH_nat_R 1 p [I] urnat p = ulnat p.
 Proof.
   srapply (EH_nat_R_coh p @ concat_1p _). 
 Defined.
 
 Definition EH_nat_iso_L {X} {a : X} (p : idpath (idpath a) = idpath (idpath a)) :
-  EH_nat_L p [I] ulnat p = urnat p.
+  EH_nat_L 1 p [I] ulnat p = urnat p.
 Proof.
   srapply (EH_nat_L_coh p @ concat_1p _). 
 Defined.
@@ -206,8 +206,8 @@ Defined.
 
 Local Definition doubleNat {X} {a : X} 
   {p q r s : idpath a = idpath a} (alpha : p = q) (beta : r = s)
-  : whiskerR (wlrnat alpha beta) _ @ ((EH_nat_L alpha) [-] (EH_nat_R beta))
-    =  ((EH_nat_R beta) [-] (EH_nat_L alpha)) @ (whiskerL _ (wlrnat beta alpha))^.
+  : whiskerR (wlrnat alpha beta) _ @ ((EH_nat_L _ alpha) [-] (EH_nat_R _ beta))
+    =  ((EH_nat_R _ beta) [-] (EH_nat_L _ alpha)) @ (whiskerL _ (wlrnat beta alpha))^.
 Proof.
   induction alpha, beta.
   srapply (downSqueeze^-1 1).
@@ -239,8 +239,8 @@ Section Triangle_gen.
     and moreover that
        alpha [I] beta = phi
        gamma [I] delta  = theta
-    Then, writing rSq := rightSqueeze, we can prove that 
-       rSq (phi [-] theta) = (rSq alpha @@ rSq gamma) @ (rSq beta @@ rSq delta)
+       
+    Then, we can prove that ...
   *) 
 
   Local Definition triangle :
@@ -285,7 +285,7 @@ Section Syllepsis.
     induction H_sq; clear H_sq.
     intro H_tr_lo. intro H_tr_up.
     hott_simpl.
-    symmetry in H_tr_lo. induction H_tr_lo.
+    induction H_tr_lo.
     exact H_tr_up.
   Qed.
 
