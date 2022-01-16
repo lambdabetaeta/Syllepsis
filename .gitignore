@@ -2,5 +2,8 @@ _opam/
 *.aux
 *.glob
 *.d
-Makefile
-Makefile.conf
+*.vo
+*.vok
+*.vos
+CoqMakefile
+CoqMakefile.conf
