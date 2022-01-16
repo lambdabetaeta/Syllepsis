@@ -59,7 +59,7 @@ Proof.
   induction theta, alpha. exact 1.
 Defined.
 
-Local Definition EH_refl_L {X} {a : X} (p : idpath a = idpath a) :
+Definition EH_refl_L {X} {a : X} (p : idpath a = idpath a) :
   EH 1 p @ concat_p1 p = concat_1p p.
 Proof.
   unfold EH. 
@@ -74,7 +74,7 @@ Proof.
   induction theta, alpha. exact 1.
 Defined.
 
-Local Definition EH_refl_R {X} {a : X} (p : idpath a = idpath a) :
+Definition EH_refl_R {X} {a : X} (p : idpath a = idpath a) :
   EH p idpath @ concat_1p p = concat_p1 p.
 Proof.
   unfold EH.
@@ -155,7 +155,7 @@ Infix "[I]" := (sqConcatH) (at level 60).
 
 (* NATURALITY OF EH (section 6) *)
 
-Local Definition EH_nat_L {X} {a : X} {p q : idpath a = idpath a} 
+Definition EH_nat_L {X} {a : X} {p q : idpath a = idpath a} 
     (r : idpath a = idpath a) (alpha : p = q)
   : whiskerR alpha r @ EH q r = EH p r @ whiskerL r alpha.
 Proof.
@@ -163,7 +163,7 @@ Proof.
   srapply (downSqueeze^-1 idpath).
 Defined.
 
-Local Definition EH_nat_R {X} {a : X} {p q : idpath a = idpath a}
+Definition EH_nat_R {X} {a : X} {p q : idpath a = idpath a}
     (r : idpath a = idpath a) (alpha : p = q) 
   : whiskerL r alpha @ EH r q = EH r p @ whiskerR alpha r.
 Proof.
@@ -176,13 +176,13 @@ Section EH_ur_ul.
 
   Context {X} {a : X} {p} (alpha : idpath (idpath a) = p).
 
-  Definition EH_nat_R_coh
+  Local Definition EH_nat_R_coh
     : EH_nat_R 1 alpha [I] urnat alpha = whiskerL _ (EH_refl_L p) @ ulnat alpha.
   Proof.
     induction alpha. exact 1.  
   Defined.
   
-  Definition EH_nat_L_coh 
+  Local Definition EH_nat_L_coh 
     : EH_nat_L 1 alpha [I] ulnat alpha = whiskerL _ (EH_refl_R p) @ urnat alpha.
   Proof.
     induction alpha. exact 1.  
