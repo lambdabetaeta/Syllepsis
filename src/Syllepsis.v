@@ -2,19 +2,19 @@ From HoTT Require Import Basics Types.
   
 (* Monoidal isomorphisms *)
 
-Local Definition ulnat {X} {a b : X} {p q : a = b} (alpha : p = q) :
+Definition ulnat {X} {a b : X} {p q : a = b} (alpha : p = q) :
   whiskerL 1 alpha @ concat_1p q = concat_1p p @ alpha.
 Proof.
   induction p, alpha. exact 1.
 Defined. 
 
-Local Definition urnat {X} {a b : X} {p q : a = b} (alpha : p = q) :
+Definition urnat {X} {a b : X} {p q : a = b} (alpha : p = q) :
   whiskerR alpha 1 @ concat_p1 q = concat_p1 p @ alpha.
 Proof.
   induction p, alpha. exact 1.
 Defined. 
 
-Local Definition rightSqueeze {X} {a b : X} {p q : a = b}
+Definition rightSqueeze {X} {a b : X} {p q : a = b}
   : (p @ 1 = 1 @ q) <~> (p = q).
 Proof.
   refine (equiv_compose' _ _).
@@ -22,7 +22,7 @@ Proof.
   - exact (equiv_concat_l (concat_p1 _)^ _).
 Defined.
 
-Local Definition downSqueeze {X} {a b : X} {p q : a = b}
+Definition downSqueeze {X} {a b : X} {p q : a = b}
   : (1 @ p = q @ 1) <~> (p = q) .
 Proof.
   refine (equiv_compose' _ _).
@@ -30,7 +30,7 @@ Proof.
   - exact (equiv_concat_l (concat_1p _)^ _).
 Defined.
 
-Local Definition wlrnat {X} {a b c : X} {p q : a = b} {r s : b = c} alpha beta
+Definition wlrnat {X} {a b c : X} {p q : a = b} {r s : b = c} alpha beta
   : whiskerL p beta @ whiskerR alpha s = whiskerR alpha r @ whiskerL q beta.
 Proof.
   induction alpha, beta. exact 1.
@@ -206,8 +206,8 @@ Defined.
 
 Local Definition doubleNat {X} {a : X} 
   {p q r s : idpath a = idpath a} (alpha : p = q) (beta : r = s)
-  : whiskerR (wlrnat alpha beta) _ @ ((EH_nat_L _ alpha) [-] (EH_nat_R _ beta))
-    =  ((EH_nat_R _ beta) [-] (EH_nat_L _ alpha)) @ (whiskerL _ (wlrnat beta alpha))^.
+  : whiskerR (wlrnat alpha beta) _ @ ((EH_nat_L r alpha) [-] (EH_nat_R q beta))
+    =  ((EH_nat_R p beta) [-] (EH_nat_L s alpha)) @ (whiskerL _ (wlrnat beta alpha))^.
 Proof.
   induction alpha, beta.
   srapply (downSqueeze^-1 1).

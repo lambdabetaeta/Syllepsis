@@ -1,4 +1,4 @@
--I src/
+-R src/ Syllepsis
 -arg -noinit
 -arg -indices-matter
 src/Syllepsis.v
